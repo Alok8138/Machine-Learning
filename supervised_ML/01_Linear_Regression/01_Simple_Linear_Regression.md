@@ -68,7 +68,7 @@ Every symbol, defined right now:
 The **classical assumptions** (called Gauss-Markov assumptions) are:
 1. **Linearity**: The true relationship between $x$ and $y$ is indeed linear.
 2. **Independence**: Each $\varepsilon_i$ is independent of every other $\varepsilon_j$ for $i \neq j$.
-3. **Homoscedasticity**: All errors have the same variance: $\mathrm{Var}(\varepsilon_i) = \sigma^2$ (constant, does not depend on $i$ or $x_i$).
+3. **Homoscedasticity**: All errors have the same variance: $\text{Var}(\varepsilon_i) = \sigma^2$ (constant, does not depend on $i$ or $x_i$).
 4. **Zero mean**: $\mathbb{E}[\varepsilon_i] = 0$ — errors are centered at zero (the line is the right center).
 5. **No measurement error in $x$**: We observe $x_i$ perfectly.
 
@@ -100,7 +100,7 @@ We're saying: "$y$ is approximately a straight-line function of $x$, with some r
 
 We need a precise definition of what makes one line better than another. The standard choice is **Ordinary Least Squares (OLS)**: find $\hat{\beta}_0$ and $\hat{\beta}_1$ that minimize the **Residual Sum of Squares (RSS)**:
 
-$$\mathrm{RSS}(\beta_0, \beta_1) = \sum_{i=1}^{n} (y_i - \beta_0 - \beta_1 x_i)^2 \tag{4}$$
+$$\text{RSS}(\beta_0, \beta_1) = \sum_{i=1}^{n} (y_i - \beta_0 - \beta_1 x_i)^2 \tag{4}$$
 
 *Why squared errors?* Three reasons: (1) Squaring makes all errors positive, so positive and negative errors don't cancel. (2) Squaring penalizes large errors more than small ones — a single massive miss is worse than several small misses. (3) The square function is smooth and differentiable everywhere, making calculus-based optimization clean.
 
@@ -108,15 +108,15 @@ $$\mathrm{RSS}(\beta_0, \beta_1) = \sum_{i=1}^{n} (y_i - \beta_0 - \beta_1 x_i)^
 
 ### 4.2 Setting Up the Optimization
 
-We have a function of two variables: $\mathrm{RSS}(\beta_0, \beta_1)$. To minimize it, we take the **partial derivative** with respect to each parameter, set both to zero, and solve the resulting system of two equations. These two equations are called the **Normal Equations**.
+We have a function of two variables: $\text{RSS}(\beta_0, \beta_1)$. To minimize it, we take the **partial derivative** with respect to each parameter, set both to zero, and solve the resulting system of two equations. These two equations are called the **Normal Equations**.
 
 Let's write out RSS explicitly:
 
-$$\mathrm{RSS} = \sum_{i=1}^{n} (y_i - \beta_0 - \beta_1 x_i)^2 \tag{5}$$
+$$\text{RSS} = \sum_{i=1}^{n} (y_i - \beta_0 - \beta_1 x_i)^2 \tag{5}$$
 
 ### 4.3 Taking the Partial Derivative with Respect to $\beta_0$
 
-$$\frac{\partial \mathrm{RSS}}{\partial \beta_0} = \sum_{i=1}^{n} 2(y_i - \beta_0 - \beta_1 x_i) \cdot (-1) \tag{6}$$
+$$\frac{\partial \text{RSS}}{\partial \beta_0} = \sum_{i=1}^{n} 2(y_i - \beta_0 - \beta_1 x_i) \cdot (-1) \tag{6}$$
 
 *Why $(-1)$?* By the chain rule: the derivative of $(y_i - \beta_0 - \beta_1 x_i)^2$ with respect to $\beta_0$ is $2(y_i - \beta_0 - \beta_1 x_i)$ times the derivative of the inner function $(y_i - \beta_0 - \beta_1 x_i)$ with respect to $\beta_0$, which is $-1$.
 
@@ -150,7 +150,7 @@ $$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x} \tag{10}$$
 
 ### 4.4 Taking the Partial Derivative with Respect to $\beta_1$
 
-$$\frac{\partial \mathrm{RSS}}{\partial \beta_1} = \sum_{i=1}^{n} 2(y_i - \beta_0 - \beta_1 x_i) \cdot (-x_i) \tag{11}$$
+$$\frac{\partial \text{RSS}}{\partial \beta_1} = \sum_{i=1}^{n} 2(y_i - \beta_0 - \beta_1 x_i) \cdot (-x_i) \tag{11}$$
 
 *Why $(-x_i)$?* By the chain rule: derivative of $(y_i - \beta_0 - \beta_1 x_i)^2$ with respect to $\beta_1$ is $2(y_i - \beta_0 - \beta_1 x_i)$ times the derivative of the inner function with respect to $\beta_1$, which is $-x_i$.
 
@@ -244,15 +244,15 @@ We took derivatives and found a critical point. How do we know it's a minimum an
 
 The Hessian matrix of RSS with respect to $(\beta_0, \beta_1)$ is:
 
-$$H = \begin{pmatrix} \frac{\partial^2 \mathrm{RSS}}{\partial \beta_0^2} & \frac{\partial^2 \mathrm{RSS}}{\partial \beta_0 \partial \beta_1} \\ \frac{\partial^2 \mathrm{RSS}}{\partial \beta_1 \partial \beta_0} & \frac{\partial^2 \mathrm{RSS}}{\partial \beta_1^2} \end{pmatrix}$$
+$$H = \begin{pmatrix} \frac{\partial^2 \text{RSS}}{\partial \beta_0^2} & \frac{\partial^2 \text{RSS}}{\partial \beta_0 \partial \beta_1} \\ \frac{\partial^2 \text{RSS}}{\partial \beta_1 \partial \beta_0} & \frac{\partial^2 \text{RSS}}{\partial \beta_1^2} \end{pmatrix}$$
 
 Computing each entry from equation (5):
 
-$$\frac{\partial^2 \mathrm{RSS}}{\partial \beta_0^2} = 2n \tag{22}$$
+$$\frac{\partial^2 \text{RSS}}{\partial \beta_0^2} = 2n \tag{22}$$
 
-$$\frac{\partial^2 \mathrm{RSS}}{\partial \beta_1^2} = 2\sum_{i=1}^{n} x_i^2 \tag{23}$$
+$$\frac{\partial^2 \text{RSS}}{\partial \beta_1^2} = 2\sum_{i=1}^{n} x_i^2 \tag{23}$$
 
-$$\frac{\partial^2 \mathrm{RSS}}{\partial \beta_0 \partial \beta_1} = 2\sum_{i=1}^{n} x_i \tag{24}$$
+$$\frac{\partial^2 \text{RSS}}{\partial \beta_0 \partial \beta_1} = 2\sum_{i=1}^{n} x_i \tag{24}$$
 
 So:
 
@@ -260,7 +260,7 @@ $$H = 2\begin{pmatrix} n & \sum x_i \\ \sum x_i & \sum x_i^2 \end{pmatrix}$$
 
 For a minimum, we need $H$ to be **positive definite** (all eigenvalues positive). The sufficient condition: (1) top-left entry is positive: $2n > 0$ ✓ (always true for $n \geq 1$), and (2) the determinant is positive:
 
-$$\det(H) = 4\left(n \sum x_i^2 - \left(\sum x_i\right)^2\right) = 4n^2\left(\frac{1}{n}\sum x_i^2 - \bar{x}^2\right) = 4n^2 \cdot \mathrm{Var}(x)$$
+$$\det(H) = 4\left(n \sum x_i^2 - \left(\sum x_i\right)^2\right) = 4n^2\left(\frac{1}{n}\sum x_i^2 - \bar{x}^2\right) = 4n^2 \cdot \text{Var}(x)$$
 
 This is positive as long as **not all $x_i$ are identical** (i.e., there is some variation in $x$). If all $x_i$ are the same, you literally cannot fit a line — the denominator of $\hat{\beta}_1$ is zero.
 
@@ -272,11 +272,11 @@ How good is our fitted line? We decompose the total variation in $y$ into explai
 
 Define:
 
-- **Total Sum of Squares (TSS)**: $\mathrm{TSS} = \sum_{i=1}^n (y_i - \bar{y})^2$ — total variation in $y$.
-- **Residual Sum of Squares (RSS)**: $\mathrm{RSS} = \sum_{i=1}^n (y_i - \hat{y}_i)^2$ — variation not explained by the model.
-- **Explained Sum of Squares (ESS)**: $\mathrm{ESS} = \sum_{i=1}^n (\hat{y}_i - \bar{y})^2$ — variation explained by the model.
+- **Total Sum of Squares (TSS)**: $\text{TSS} = \sum_{i=1}^n (y_i - \bar{y})^2$ — total variation in $y$.
+- **Residual Sum of Squares (RSS)**: $\text{RSS} = \sum_{i=1}^n (y_i - \hat{y}_i)^2$ — variation not explained by the model.
+- **Explained Sum of Squares (ESS)**: $\text{ESS} = \sum_{i=1}^n (\hat{y}_i - \bar{y})^2$ — variation explained by the model.
 
-**Theorem:** $\mathrm{TSS} = \mathrm{ESS} + \mathrm{RSS}$
+**Theorem:** $\text{TSS} = \text{ESS} + \text{RSS}$
 
 *Proof:*
 
@@ -286,24 +286,24 @@ $$= \sum_{i=1}^n (y_i - \hat{y}_i)^2 + 2\sum_{i=1}^n (y_i - \hat{y}_i)(\hat{y}_i
 
 The cross-term $\sum_{i=1}^n (y_i - \hat{y}_i)(\hat{y}_i - \bar{y}) = \sum_{i=1}^n e_i(\hat{y}_i - \bar{y})$ is zero. *Why?* The OLS residuals $e_i$ are orthogonal to fitted values $\hat{y}_i$ (and to any linear combination of the $x_i$s including $\bar{y}$). This orthogonality follows directly from the normal equations — see it as the geometric consequence of projecting $y$ onto the column space of $X$.
 
-Therefore: $\mathrm{TSS} = \mathrm{RSS} + \mathrm{ESS}$ ✓
+Therefore: $\text{TSS} = \text{RSS} + \text{ESS}$ ✓
 
 The **coefficient of determination** $R^2$ is:
 
-$$\boxed{R^2 = \frac{\mathrm{ESS}}{\mathrm{TSS}} = 1 - \frac{\mathrm{RSS}}{\mathrm{TSS}}} \tag{25}$$
+$$\boxed{R^2 = \frac{\text{ESS}}{\text{TSS}} = 1 - \frac{\text{RSS}}{\text{TSS}}} \tag{25}$$
 
 $R^2 \in [0, 1]$ (for simple linear regression — it can be negative for multiple regression if you fit without an intercept). It tells you the **fraction of variance in $y$ explained by the linear relationship with $x$**.
 
 **Key fact:** In simple linear regression (with an intercept), $R^2 = r^2$, the square of the correlation coefficient. This is a non-trivial result — the model's explanatory power exactly equals the squared correlation.
 
 *Proof:*
-$$R^2 = \frac{\mathrm{ESS}}{\mathrm{TSS}} = \frac{\hat{\beta}_1^2 S_{xx}}{S_{yy}} = \frac{\left(\frac{S_{xy}}{S_{xx}}\right)^2 S_{xx}}{S_{yy}} = \frac{S_{xy}^2}{S_{xx} \cdot S_{yy}} = r^2 \tag{26}$$
+$$R^2 = \frac{\text{ESS}}{\text{TSS}} = \frac{\hat{\beta}_1^2 S_{xx}}{S_{yy}} = \frac{\left(\frac{S_{xy}}{S_{xx}}\right)^2 S_{xx}}{S_{yy}} = \frac{S_{xy}^2}{S_{xx} \cdot S_{yy}} = r^2 \tag{26}$$
 
 ### 4.10 Estimating the Error Variance $\sigma^2$
 
 We assumed $\varepsilon_i \sim \mathcal{N}(0, \sigma^2)$, but $\sigma^2$ is unknown. We estimate it from the residuals:
 
-$$\hat{\sigma}^2 = \frac{\mathrm{RSS}}{n - 2} = \frac{\sum_{i=1}^{n} e_i^2}{n-2} \tag{27}$$
+$$\hat{\sigma}^2 = \frac{\text{RSS}}{n - 2} = \frac{\sum_{i=1}^{n} e_i^2}{n-2} \tag{27}$$
 
 *Why divide by $n-2$ and not $n$?* We lose **2 degrees of freedom** because we estimated 2 parameters ($\beta_0$ and $\beta_1$) from the data. The residuals are constrained to satisfy two conditions (from the two normal equations): $\sum e_i = 0$ and $\sum x_i e_i = 0$. So only $n-2$ of the $n$ residuals are "free." Dividing by $n-2$ makes $\hat{\sigma}^2$ an **unbiased estimator** of $\sigma^2$, meaning $\mathbb{E}[\hat{\sigma}^2] = \sigma^2$.
 
@@ -312,7 +312,6 @@ $$\hat{\sigma}^2 = \frac{\mathrm{RSS}}{n - 2} = \frac{\sum_{i=1}^{n} e_i^2}{n-2}
 Under the Gauss-Markov assumptions:
 
 **Unbiasedness:**
-
 $$\mathbb{E}[\hat{\beta}_1] = \beta_1, \quad \mathbb{E}[\hat{\beta}_0] = \beta_0 \tag{28}$$
 
 *Proof for $\hat{\beta}_1$:*
@@ -332,14 +331,13 @@ Now: $\sum w_i = \frac{\sum(x_i - \bar{x})}{S_{xx}} = \frac{0}{S_{xx}} = 0$ and 
 Therefore $\mathbb{E}[\hat{\beta}_1] = \beta_0 \cdot 0 + \beta_1 \cdot 1 = \beta_1$ ✓
 
 **Variance:**
+$$\text{Var}(\hat{\beta}_1) = \frac{\sigma^2}{S_{xx}} = \frac{\sigma^2}{\sum(x_i - \bar{x})^2} \tag{29}$$
 
-$$\mathrm{Var}(\hat{\beta}_1) = \frac{\sigma^2}{S_{xx}} = \frac{\sigma^2}{\sum(x_i - \bar{x})^2} \tag{29}$$
-
-$$\mathrm{Var}(\hat{\beta}_0) = \sigma^2 \left(\frac{1}{n} + \frac{\bar{x}^2}{S_{xx}}\right) \tag{30}$$
+$$\text{Var}(\hat{\beta}_0) = \sigma^2 \left(\frac{1}{n} + \frac{\bar{x}^2}{S_{xx}}\right) \tag{30}$$
 
 *Proof of (29):* Since $\hat{\beta}_1 = \sum w_i y_i$ with $y_i$ independent:
 
-$$\mathrm{Var}(\hat{\beta}_1) = \sum w_i^2 \mathrm{Var}(y_i) = \sigma^2 \sum w_i^2 = \sigma^2 \frac{\sum(x_i-\bar{x})^2}{S_{xx}^2} = \frac{\sigma^2}{S_{xx}}$$
+$$\text{Var}(\hat{\beta}_1) = \sum w_i^2 \text{Var}(y_i) = \sigma^2 \sum w_i^2 = \sigma^2 \frac{\sum(x_i-\bar{x})^2}{S_{xx}^2} = \frac{\sigma^2}{S_{xx}}$$
 
 **Gauss-Markov Theorem:** Among all **linear unbiased estimators** of $\beta_1$, the OLS estimator $\hat{\beta}_1$ has the **smallest variance**. In other words, OLS is **BLUE** — Best Linear Unbiased Estimator. This is a powerful optimality result — you can't do better (in terms of variance) if you want a linear, unbiased estimator.
 
@@ -765,15 +763,15 @@ R² = r²  (confirmed numerically)
 
 Start from the loss function we want to minimize — the Residual Sum of Squares:
 
-$$\mathrm{RSS}(\beta_0, \beta_1) = \sum_{i=1}^{n} (y_i - \beta_0 - \beta_1 x_i)^2$$
+$$\text{RSS}(\beta_0, \beta_1) = \sum_{i=1}^{n} (y_i - \beta_0 - \beta_1 x_i)^2$$
 
 Take the partial derivative with respect to $\beta_0$ and set to zero:
 
-$$\frac{\partial \mathrm{RSS}}{\partial \beta_0} = -2\sum_{i=1}^n (y_i - \beta_0 - \beta_1 x_i) = 0 \implies \hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$$
+$$\frac{\partial \text{RSS}}{\partial \beta_0} = -2\sum_{i=1}^n (y_i - \beta_0 - \beta_1 x_i) = 0 \implies \hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$$
 
 Take the partial derivative with respect to $\beta_1$ and set to zero:
 
-$$\frac{\partial \mathrm{RSS}}{\partial \beta_1} = -2\sum_{i=1}^n x_i(y_i - \beta_0 - \beta_1 x_i) = 0$$
+$$\frac{\partial \text{RSS}}{\partial \beta_1} = -2\sum_{i=1}^n x_i(y_i - \beta_0 - \beta_1 x_i) = 0$$
 
 Substitute the expression for $\hat{\beta}_0$:
 
@@ -789,7 +787,7 @@ This is a minimum because the Hessian is positive definite (RSS is strictly conv
 
 **Ideal Answer:**
 
-The Gauss-Markov assumptions are: (1) the model is correctly specified as linear; (2) the error terms have zero conditional mean, $\mathbb{E}[\varepsilon_i | x_i] = 0$; (3) errors are homoscedastic, $\mathrm{Var}(\varepsilon_i) = \sigma^2$; (4) errors are uncorrelated, $\mathrm{Cov}(\varepsilon_i, \varepsilon_j) = 0$ for $i \neq j$.
+The Gauss-Markov assumptions are: (1) the model is correctly specified as linear; (2) the error terms have zero conditional mean, $\mathbb{E}[\varepsilon_i | x_i] = 0$; (3) errors are homoscedastic, $\text{Var}(\varepsilon_i) = \sigma^2$; (4) errors are uncorrelated, $\text{Cov}(\varepsilon_i, \varepsilon_j) = 0$ for $i \neq j$.
 
 Under these assumptions, the Gauss-Markov Theorem states that the OLS estimator is **BLUE** — the Best Linear Unbiased Estimator. "Best" means minimum variance; "linear" means it's a linear function of the $y_i$s; "unbiased" means $\mathbb{E}[\hat{\beta}_j] = \beta_j$.
 
@@ -801,11 +799,11 @@ Critically, Gauss-Markov does **not** require Normality of errors. You don't nee
 
 **Ideal Answer:**
 
-$R^2 = 1 - \mathrm{RSS}/\mathrm{TSS}$ measures the fraction of total variance in $y$ explained by the linear model. It ranges from 0 (the model does no better than predicting $\bar{y}$ for everyone) to 1 (perfect fit, no residuals).
+$R^2 = 1 - \text{RSS}/\text{TSS}$ measures the fraction of total variance in $y$ explained by the linear model. It ranges from 0 (the model does no better than predicting $\bar{y}$ for everyone) to 1 (perfect fit, no residuals).
 
 In simple linear regression:
 
-$$R^2 = \frac{\mathrm{ESS}}{\mathrm{TSS}} = \frac{\hat{\beta}_1^2 S_{xx}}{S_{yy}} = \frac{\left(\frac{S_{xy}}{S_{xx}}\right)^2 S_{xx}}{S_{yy}} = \frac{S_{xy}^2}{S_{xx} \cdot S_{yy}} = r^2$$
+$$R^2 = \frac{\text{ESS}}{\text{TSS}} = \frac{\hat{\beta}_1^2 S_{xx}}{S_{yy}} = \frac{\left(\frac{S_{xy}}{S_{xx}}\right)^2 S_{xx}}{S_{yy}} = \frac{S_{xy}^2}{S_{xx} \cdot S_{yy}} = r^2$$
 
 where $r = S_{xy}/\sqrt{S_{xx} S_{yy}}$ is the sample correlation. So $R^2$ is literally the squared correlation between $x$ and $y$. This is unique to the simple (one-predictor) case. In multiple regression, $R^2$ is the squared correlation between $y$ and $\hat{y}$, not between $y$ and any single predictor.
 
@@ -815,14 +813,14 @@ where $r = S_{xy}/\sqrt{S_{xx} S_{yy}}$ is the sample correlation. So $R^2$ is l
 
 **Ideal Answer:**
 
-The OLS estimator $\hat{\beta}_1$ is unbiased: $\mathbb{E}[\hat{\beta}_1] = \beta_1$. Its variance is $\mathrm{Var}(\hat{\beta}_1) = \sigma^2/S_{xx}$.
+The OLS estimator $\hat{\beta}_1$ is unbiased: $\mathbb{E}[\hat{\beta}_1] = \beta_1$. Its variance is $\text{Var}(\hat{\beta}_1) = \sigma^2/S_{xx}$.
 
 The bias-variance tradeoff becomes relevant when we consider alternatives to OLS:
 
 - **Ridge regression** shrinks the estimates toward zero: $\hat{\beta}_1^{\text{ridge}}$ is biased (it underestimates $|\beta_1|$), but has lower variance than OLS.
 - **No model at all** (always predict $\bar{y}$): high bias (nonzero if $\beta_1 \neq 0$), zero variance.
 
-In terms of Mean Squared Error: $\mathrm{MSE} = \mathrm{Bias}^2 + \text{Variance}$. OLS minimizes variance among unbiased estimators (Gauss-Markov), but a slightly biased estimator might have lower MSE if it reduces variance enough. This is the fundamental tradeoff: accepting some bias to get lower variance, especially when $n$ is small relative to the number of parameters.
+In terms of Mean Squared Error: $\text{MSE} = \text{Bias}^2 + \text{Variance}$. OLS minimizes variance among unbiased estimators (Gauss-Markov), but a slightly biased estimator might have lower MSE if it reduces variance enough. This is the fundamental tradeoff: accepting some bias to get lower variance, especially when $n$ is small relative to the number of parameters.
 
 ---
 
@@ -886,7 +884,7 @@ $R^2$ is monotonically non-decreasing as you add predictors. In the extreme, if 
 
 The fix is to use **adjusted $R^2$**:
 
-$$R^2_{\mathrm{adj}} = 1 - \frac{\mathrm{RSS}/(n-p-1)}{\mathrm{TSS}/(n-1)}$$
+$$R^2_{\text{adj}} = 1 - \frac{\text{RSS}/(n-p-1)}{\text{TSS}/(n-1)}$$
 
 where $p$ is the number of predictors. This penalizes model complexity. Or better yet, use cross-validation or information criteria like AIC/BIC.
 
