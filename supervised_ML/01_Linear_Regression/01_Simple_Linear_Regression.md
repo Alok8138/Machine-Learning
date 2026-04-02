@@ -261,9 +261,9 @@ To minimise, we take the partial derivative with respect to $\beta_0$ and set it
 
 **Partial derivative** means: treat $\beta_1$ as a constant and differentiate only with respect to $\beta_0$.
 
-$$\frac{\partial \, \mathrm{RSS}}{\partial \beta_0} = \sum_{i=1}^{n} 2(y_i - \beta_0 - \beta_1 x_i) \cdot (-1) = 0 \tag{2}$$
+$$\frac{\partial \, \text{RSS}}{\partial \beta_0} = \sum_{i=1}^{n} 2(y_i - \beta_0 - \beta_1 x_i) \cdot (-1) = 0 \tag{2}$$
 
-*Why $(-1)$ at the end?* By the chain rule: derivative of $(y_i - \beta_0 - \beta_1 x_i)^2$ is $2(\ldots)$ times the derivative of the inside with respect to $\beta_0$, which is $-1$.
+*Why $(-1)$ at the end?* By the chain rule: derivative of $(y_i - \beta_0 - \beta_1 x_i)^2$ is $2(\dots)$ times the derivative of the inside with respect to $\beta_0$, which is $-1$.
 
 Divide both sides by $-2$:
 
@@ -279,17 +279,21 @@ Divide through by $n$:
 
 $$\bar{y} - \beta_0 - \beta_1 \bar{x} = 0 \tag{5}$$
 
-Rearrange:
+Rearrange to solve for the intercept:
 
-$$\boxed{\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}} \tag{6}$$
+$$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x} \tag{6}$$
 
 **What this tells us geometrically:** The best-fit line always passes through the point $(\bar{x}, \bar{y})$ — the centre of mass of all the data. No matter what the data looks like, the OLS line is anchored to this centre.
+
+
+
+---
 
 ### 2.3 — Deriving $\hat{\beta}_1$: The Second Normal Equation
 
 Take the partial derivative with respect to $\beta_1$:
 
-$$\frac{\partial \, \mathrm{RSS}}{\partial \beta_1} = \sum_{i=1}^{n} 2(y_i - \beta_0 - \beta_1 x_i) \cdot (-x_i) = 0 \tag{7}$$
+$$\frac{\partial \, \text{RSS}}{\partial \beta_1} = \sum_{i=1}^{n} 2(y_i - \beta_0 - \beta_1 x_i) \cdot (-x_i) = 0 \tag{7}$$
 
 *Why $(-x_i)$?* Chain rule again — the derivative of the inside $(y_i - \beta_0 - \beta_1 x_i)$ with respect to $\beta_1$ is $-x_i$.
 
@@ -309,7 +313,7 @@ Note that $\sum_{i=1}^{n} x_i = n\bar{x}$, so:
 
 $$\sum_{i=1}^{n} x_i y_i - \bar{y}(n\bar{x}) + \hat{\beta}_1 \bar{x}(n\bar{x}) - \hat{\beta}_1 \sum_{i=1}^{n} x_i^2 = 0 \tag{11}$$
 
-Collect the $\hat{\beta}_1$ terms on the right:
+Collect the $\hat{\beta}_1$ terms on the right side:
 
 $$\sum_{i=1}^{n} x_i y_i - n\bar{x}\bar{y} = \hat{\beta}_1\left(\sum_{i=1}^{n} x_i^2 - n\bar{x}^2\right) \tag{12}$$
 
