@@ -169,7 +169,13 @@ This means: **for every 1 extra hour studied, the predicted score goes up by 7.5
 
 **Step 4d — Compute the intercept:**
 
-$$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \cdot \bar{x} = 56 - 7.5 \times 3 = 56 - 22.5 = 33.5$$
+$$
+\begin{aligned}
+\hat{\beta}_0 &= \bar{y} - \hat{\beta}_1 \cdot \bar{x} \\
+              &= 56 - 7.5 \times 3 \\
+              &= 33.5
+\end{aligned}
+$$
 
 **Our fitted line is:** $\hat{y} = 33.5 + 7.5x$
 
@@ -341,7 +347,12 @@ This is called $S_{xx}$ (the **sample variance of $x$**, unnormalized).
 
 So the final clean form is:
 
-$$\boxed{\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{\sum_{i=1}^{n}(x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^{n}(x_i - \bar{x})^2}} \tag{14}$$
+$$
+\begin{aligned}
+\boxed{\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}}}
+&= \frac{\sum_{i=1}^{n}(x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^{n}(x_i - \bar{x})^2} \tag{14}
+\end{aligned}
+$$
 
 ### 2.5 — What the Slope Formula Is Actually Saying
 
