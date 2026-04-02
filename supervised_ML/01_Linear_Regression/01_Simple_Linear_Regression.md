@@ -261,75 +261,62 @@ To minimise, we take the partial derivative with respect to $\beta_0$ and set it
 
 **Partial derivative** means: treat $\beta_1$ as a constant and differentiate only with respect to $\beta_0$.
 
-(2)
-$$\frac{\partial RSS}{\partial \beta_0} = \sum_{i=1}^{n} 2(y_i - \beta_0 - \beta_1 x_i) \cdot (-1) = 0$$
+$$\frac{\partial \, \mathrm{RSS}}{\partial \beta_0} = \sum_{i=1}^{n} 2(y_i - \beta_0 - \beta_1 x_i) \cdot (-1) = 0 \tag{2}$$
 
-*Why $(-1)$ at the end?* By the chain rule: derivative of $(y_i - \beta_0 - \beta_1 x_i)^2$ is $2(...)$ times the derivative of the inside with respect to $\beta_0$, which is $-1$.
+*Why $(-1)$ at the end?* By the chain rule: derivative of $(y_i - \beta_0 - \beta_1 x_i)^2$ is $2(\ldots)$ times the derivative of the inside with respect to $\beta_0$, which is $-1$.
 
 Divide both sides by $-2$:
 
-(3)
-$$\sum_{i=1}^{n} (y_i - \beta_0 - \beta_1 x_i) = 0$$
+$$\sum_{i=1}^{n} (y_i - \beta_0 - \beta_1 x_i) = 0 \tag{3}$$
 
 Split the sum:
 
-(4)
-$$\sum_{i=1}^{n} y_i - n\beta_0 - \beta_1 \sum_{i=1}^{n} x_i = 0$$
+$$\sum_{i=1}^{n} y_i - n\beta_0 - \beta_1 \sum_{i=1}^{n} x_i = 0 \tag{4}$$
 
 *Why $\sum \beta_0 = n\beta_0$?* Because $\beta_0$ is a constant — adding it $n$ times gives $n\beta_0$.
 
 Divide through by $n$:
 
-(5)
-$$\bar{y} - \beta_0 - \beta_1 \bar{x} = 0$$
+$$\bar{y} - \beta_0 - \beta_1 \bar{x} = 0 \tag{5}$$
 
-Rearrange to solve for the intercept:
+Rearrange:
 
-(6)
-$$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$$
+$$\boxed{\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}} \tag{6}$$
 
-**What this tells us geometrically:** The best-fit line always passes through the point $(\bar{x}, \bar{y})$ — the centre of mass of all the data. 
-
----
+**What this tells us geometrically:** The best-fit line always passes through the point $(\bar{x}, \bar{y})$ — the centre of mass of all the data. No matter what the data looks like, the OLS line is anchored to this centre.
 
 ### 2.3 — Deriving $\hat{\beta}_1$: The Second Normal Equation
 
 Take the partial derivative with respect to $\beta_1$:
 
-(7)
-$$\frac{\partial RSS}{\partial \beta_1} = \sum_{i=1}^{n} 2(y_i - \beta_0 - \beta_1 x_i) \cdot (-x_i) = 0$$
+$$\frac{\partial \, \mathrm{RSS}}{\partial \beta_1} = \sum_{i=1}^{n} 2(y_i - \beta_0 - \beta_1 x_i) \cdot (-x_i) = 0 \tag{7}$$
 
-*Why $(-x_i)$?* Chain rule again — the derivative of the inside with respect to $\beta_1$ is $-x_i$.
+*Why $(-x_i)$?* Chain rule again — the derivative of the inside $(y_i - \beta_0 - \beta_1 x_i)$ with respect to $\beta_1$ is $-x_i$.
 
 Divide by $-2$:
 
-(8)
-$$\sum_{i=1}^{n} x_i(y_i - \beta_0 - \beta_1 x_i) = 0$$
+$$\sum_{i=1}^{n} x_i(y_i - \beta_0 - \beta_1 x_i) = 0 \tag{8}$$
 
 Expand:
 
-(9)
-$$\sum_{i=1}^{n} x_i y_i - \beta_0 \sum_{i=1}^{n} x_i - \beta_1 \sum_{i=1}^{n} x_i^2 = 0$$
+$$\sum_{i=1}^{n} x_i y_i - \beta_0 \sum_{i=1}^{n} x_i - \beta_1 \sum_{i=1}^{n} x_i^2 = 0 \tag{9}$$
 
-Now substitute $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$ from equation (6):
+Now substitute $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$ from equation (6) — replacing $\beta_0$:
 
-(10)
-$$\sum_{i=1}^{n} x_i y_i - (\bar{y} - \hat{\beta}_1 \bar{x})\sum_{i=1}^{n} x_i - \hat{\beta}_1 \sum_{i=1}^{n} x_i^2 = 0$$
+$$\sum_{i=1}^{n} x_i y_i - (\bar{y} - \hat{\beta}_1 \bar{x})\sum_{i=1}^{n} x_i - \hat{\beta}_1 \sum_{i=1}^{n} x_i^2 = 0 \tag{10}$$
 
-Note that $\sum x_i = n\bar{x}$, so:
+Note that $\sum_{i=1}^{n} x_i = n\bar{x}$, so:
 
-(11)
-$$\sum_{i=1}^{n} x_i y_i - \bar{y}(n\bar{x}) + \hat{\beta}_1 \bar{x}(n\bar{x}) - \hat{\beta}_1 \sum_{i=1}^{n} x_i^2 = 0$$
+$$\sum_{i=1}^{n} x_i y_i - \bar{y}(n\bar{x}) + \hat{\beta}_1 \bar{x}(n\bar{x}) - \hat{\beta}_1 \sum_{i=1}^{n} x_i^2 = 0 \tag{11}$$
 
-Collect the $\hat{\beta}_1$ terms:
+Collect the $\hat{\beta}_1$ terms on the right:
 
-(12)
-$$\sum_{i=1}^{n} x_i y_i - n\bar{x}\bar{y} = \hat{\beta}_1(\sum_{i=1}^{n} x_i^2 - n\bar{x}^2)$$
+$$\sum_{i=1}^{n} x_i y_i - n\bar{x}\bar{y} = \hat{\beta}_1\left(\sum_{i=1}^{n} x_i^2 - n\bar{x}^2\right) \tag{12}$$
 
-Solve for the slope:
+Solve for $\hat{\beta}_1$:
 
-(13)
-$$\hat{\beta}_1 = \frac{\sum x_i y_i - n\bar{x}\bar{y}}{\sum x_i^2 - n\bar{x}^2}$$
+$$\hat{\beta}_1 = \frac{\sum_{i=1}^{n} x_i y_i - n\bar{x}\bar{y}}{\sum_{i=1}^{n} x_i^2 - n\bar{x}^2} \tag{13}$$
+
 ### 2.4 — Simplifying to the Clean Form
 
 The numerator and denominator of equation (13) have elegant alternative forms. Let us derive them.
