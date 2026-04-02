@@ -4,1001 +4,973 @@
 
 ## 1. One-Line Summary
 
-Simple Linear Regression finds the unique straight line through a cloud of points that minimizes the total squared vertical distance from every point to the line, giving us the best possible linear predictor of one variable from another.
+Simple Linear Regression finds the best straight line through a set of data points so you can predict one number from another — by making the prediction errors as small as possible.
 
 ---
 
-## 2. The Intuition (Before Any Math)
+## 2. Intuition First (before any math)
 
-### The 15-Year-Old Analogy
+### The Real-World Analogy
 
-Imagine you're running a lemonade stand and you notice that on hotter days, you sell more cups. You've been keeping a notebook: "32°C → 80 cups sold, 25°C → 55 cups, 38°C → 110 cups..." and so on for 30 days.
+Imagine you are trying to guess how many hours a student studied before an exam, and you want to predict their score. You collect data from 20 students:
 
-Now your friend asks: "Hey, it's going to be 35°C tomorrow — how many cups should I expect?" You want to draw a single straight line through all your data points that best captures the trend, and then just read off the answer at 35°C.
+| Hours Studied | Exam Score |
+|---|---|
+| 1 | 45 |
+| 2 | 52 |
+| 3 | 61 |
+| 5 | 73 |
+| 8 | 89 |
+| ... | ... |
 
-But here's the key question: **of all the infinitely many straight lines you could draw, which one is the "best"?** You need a precise rule for what "best" means. Simple linear regression gives you exactly that rule — and it also hands you the unique, optimal straight line that satisfies it.
+If you plot these on a piece of paper with "Hours" on the horizontal axis and "Score" on the vertical axis, the dots form a rough diagonal band going upward. You can clearly see: **more hours → higher score**.
 
-### What Problem Does This Solve?
+Now someone asks: *"A student studied for 6 hours. What score do you predict?"*
 
-We have two related numerical variables. One is something we can measure or control (like temperature), and the other is something we want to predict (like cups sold). We want:
+You could eyeball it — but eyeballing is imprecise and different people would draw different lines. We want a **single, agreed-upon, mathematically optimal line** that every person using this data would arrive at. That is exactly what Simple Linear Regression gives you.
 
-1. A **quantitative estimate** of the relationship: "For every extra degree, I sell about 3.5 more cups."
-2. A **prediction tool**: Given a new temperature, produce a best-guess for sales.
-3. A way to **measure how strong** the relationship is.
+### What Problem Does It Solve?
 
-Without regression, you're just eyeballing — regression makes this rigorous and optimal.
+It solves three things at once:
 
-### Why It Matters in ML/AI Specifically
+1. **Summarising a relationship** — "On average, every extra hour of study adds about 6 points."
+2. **Making predictions** — Given a new input, produce a best-guess output.
+3. **Measuring how strong the relationship is** — Is studying actually related to scores, or is it random noise?
 
-Simple linear regression is not just a tool — it is the **conceptual DNA** of almost all of modern machine learning:
+### Why Does It Matter in ML/AI?
 
-- **The loss function idea** (minimize a measure of prediction error) comes directly from here.
-- **Gradient descent**, the engine of deep learning, was partly motivated by the question "how do we minimize this regression loss when no closed form exists?"
-- **The bias-variance tradeoff** is easiest to understand first in the regression context.
-- **Regularization** (Ridge, Lasso) are direct extensions of linear regression.
-- **Neural networks with no hidden layers and a linear activation are literally linear regression.**
-- The **normal equations** introduce the idea of setting derivatives to zero to find optima — something you'll do constantly in ML theory.
+Simple linear regression is the **seed from which almost all of machine learning grew**. Understanding it deeply means understanding:
 
-If you truly understand simple linear regression — every formula, every assumption, every derivation — you understand the skeleton of machine learning.
+- What a **loss function** is (the thing you minimise to train any model)
+- What **optimisation** means (finding the parameter values that make predictions best)
+- What the **bias-variance tradeoff** is
+- Why **neural networks** work the way they do — a neural network with no hidden layers and a straight output is literally linear regression
+
+Every ML model you will ever study is, in some sense, a more complex version of linear regression. Master this first and everything else becomes an extension.
 
 ---
 
 ## 3. Formal Definition
 
-### The Setup
+The **Simple Linear Regression model** says:
 
-We have $n$ observations. Each observation $i$ consists of:
-- $x_i \in \mathbb{R}$: the **input** (also called the predictor, feature, independent variable, or covariate). This is the thing we observe and use to predict.
-- $y_i \in \mathbb{R}$: the **output** (also called the response, target, or dependent variable). This is the thing we want to predict.
-
-Our dataset is: $\{(x_1, y_1), (x_2, y_2), \ldots, (x_n, y_n)\}$
-
-### The Model
-
-We **assume** that $y$ is a linear function of $x$, plus some noise:
-
-$$y_i = \beta_0 + \beta_1 x_i + \varepsilon_i \quad \text{for } i = 1, 2, \ldots, n \tag{1}$$
+$$y_i = \beta_0 + \beta_1 x_i + \varepsilon_i$$
 
 Every symbol, defined right now:
 
-- $\beta_0 \in \mathbb{R}$: the **intercept** (also called the bias). This is the value of $y$ when $x = 0$. It shifts the entire line up or down.
-- $\beta_1 \in \mathbb{R}$: the **slope** (also called the coefficient or weight). This says: "for every 1-unit increase in $x$, $y$ changes by $\beta_1$ units."
-- $\varepsilon_i \in \mathbb{R}$: the **error term** (also called noise or residual). This captures everything that affects $y_i$ but isn't captured by $x_i$. We assume $\varepsilon_i \sim \mathcal{N}(0, \sigma^2)$ — that is, the errors are independently drawn from a Normal distribution with mean zero and variance $\sigma^2$.
+- $i$ — an index for each data point. If you have 20 students, $i$ runs from 1 to 20.
+- $y_i$ — the **response variable** (what you are trying to predict). Also called the output, target, or dependent variable. Example: exam score of student $i$.
+- $x_i$ — the **predictor variable** (what you use to make the prediction). Also called the input, feature, or independent variable. Example: hours studied by student $i$.
+- $\beta_0$ — the **intercept** (pronounced "beta-zero"). This is the value the line predicts when $x = 0$. It shifts the whole line up or down.
+- $\beta_1$ — the **slope** (pronounced "beta-one"). This says: "for every 1 unit increase in $x$, the prediction increases by $\beta_1$ units."
+- $\varepsilon_i$ — the **error term** (pronounced "epsilon-i"). This is the part of $y_i$ that $x_i$ alone cannot explain — random noise, unmeasured factors, etc.
 
-The **classical assumptions** (called Gauss-Markov assumptions) are:
-1. **Linearity**: The true relationship between $x$ and $y$ is indeed linear.
-2. **Independence**: Each $\varepsilon_i$ is independent of every other $\varepsilon_j$ for $i \neq j$.
-3. **Homoscedasticity**: All errors have the same variance: $\text{Var}(\varepsilon_i) = \sigma^2$ (constant, does not depend on $i$ or $x_i$).
-4. **Zero mean**: $\mathbb{E}[\varepsilon_i] = 0$ — errors are centered at zero (the line is the right center).
-5. **No measurement error in $x$**: We observe $x_i$ perfectly.
+**In plain English:** The model is saying — *"Each person's score ($y_i$) is approximately equal to a baseline ($\beta_0$) plus their study hours times some multiplier ($\beta_1 x_i$), with a little random noise added ($\varepsilon_i$)."*
 
-### What We Want to Find
+We do not know the true $\beta_0$ and $\beta_1$. We **estimate** them from data. We call our estimates $\hat{\beta}_0$ and $\hat{\beta}_1$ (the hat symbol $\hat{}$ always means "estimated from data"). The estimated line is:
 
-We want to **estimate** $\beta_0$ and $\beta_1$ from our data. We call our estimates $\hat{\beta}_0$ and $\hat{\beta}_1$ (hat = estimated from data). The **fitted line** is then:
-
-$$\hat{y}_i = \hat{\beta}_0 + \hat{\beta}_1 x_i \tag{2}$$
+$$\hat{y}_i = \hat{\beta}_0 + \hat{\beta}_1 x_i$$
 
 where $\hat{y}_i$ is our **predicted value** for observation $i$.
 
-### The Residual
+---
 
-The **residual** for observation $i$ is:
+## ⬛ LAYER 1 — Core (Beginner Level)
 
-$$e_i = y_i - \hat{y}_i = y_i - \hat{\beta}_0 - \hat{\beta}_1 x_i \tag{3}$$
+### Step 1 — Plotting the Data
 
-The residual is what's left over — the part of $y_i$ our line didn't explain. This is different from $\varepsilon_i$: the error $\varepsilon_i$ is the true (unobservable) noise in the data-generating process; the residual $e_i$ is the observable discrepancy after we've fit our estimated line.
+Let's use a tiny concrete dataset throughout this entire layer. Small enough to calculate by hand:
 
-### Plain English Summary
+| Student $i$ | Hours $x_i$ | Score $y_i$ |
+|---|---|---|
+| 1 | 1 | 40 |
+| 2 | 2 | 50 |
+| 3 | 3 | 55 |
+| 4 | 4 | 65 |
+| 5 | 5 | 70 |
 
-We're saying: "$y$ is approximately a straight-line function of $x$, with some random noise added." Our job is to find the specific straight line (the specific values of $\beta_0$ and $\beta_1$) that best fits our observed data. "Best" will be defined precisely in the next section.
+If you sketched this, you would see five dots forming an upward-sloping band. Clearly more hours relates to higher scores. We want to draw the **best straight line** through these five dots.
+
+### Step 2 — What Does "Best Line" Even Mean?
+
+There are infinitely many straight lines you could draw. How do you decide which one is best?
+
+The natural answer is: **the line that makes the smallest prediction errors.**
+
+Here is what a prediction error looks like. Suppose we guess the line is $\hat{y} = 30 + 8x$ (we're making this up for now). For Student 1 ($x = 1$):
+
+$$\hat{y}_1 = 30 + 8 \times 1 = 38$$
+
+But the actual score is $y_1 = 40$. The error is $40 - 38 = 2$.
+
+We call this error a **residual**:
+
+$$e_i = y_i - \hat{y}_i$$
+
+The residual is how far the actual data point is from our line. Positive means the point is above the line; negative means it is below.
+
+### Step 3 — Why We Square the Residuals
+
+We have five residuals (one per student). We want a single number measuring how bad the line is overall. The obvious idea: add them up.
+
+**Problem:** Positive and negative residuals cancel out. A line that is way too high for half the students and way too low for the other half could have residuals that sum to zero — but it is clearly a terrible line.
+
+**Fix:** Square each residual before adding. Squaring makes everything positive, and it also punishes large errors more than small ones (a miss of 10 is four times worse than a miss of 5, because $10^2 = 100$ and $5^2 = 25$).
+
+This sum is called the **Residual Sum of Squares (RSS)**:
+
+$$\mathrm{RSS} = \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 = \sum_{i=1}^{n} e_i^2$$
+
+The symbol $\sum_{i=1}^{n}$ means "add up for every $i$ from 1 to $n$". Here $n = 5$.
+
+**Our goal:** find the values of $\hat{\beta}_0$ and $\hat{\beta}_1$ that make RSS as small as possible.
+
+This method is called **Ordinary Least Squares (OLS)** — "least squares" because we minimise the sum of squared residuals.
+
+### Step 4 — The Formulas for the Best Line
+
+After doing the calculus (which we will derive fully in Layer 2), the formulas for the best $\hat{\beta}_0$ and $\hat{\beta}_1$ turn out to be:
+
+$$\hat{\beta}_1 = \frac{\sum_{i=1}^{n}(x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^{n}(x_i - \bar{x})^2}$$
+
+$$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$$
+
+New symbols appearing here:
+
+- $\bar{x}$ (pronounced "x-bar") — the **mean of all $x$ values**: $\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i$
+- $\bar{y}$ (pronounced "y-bar") — the **mean of all $y$ values**: $\bar{y} = \frac{1}{n}\sum_{i=1}^{n} y_i$
+
+Let us compute everything with our five-student dataset.
+
+**Step 4a — Compute the means:**
+
+$$\bar{x} = \frac{1+2+3+4+5}{5} = \frac{15}{5} = 3$$
+
+$$\bar{y} = \frac{40+50+55+65+70}{5} = \frac{280}{5} = 56$$
+
+**Step 4b — Build a calculation table:**
+
+For each student, compute $(x_i - \bar{x})$, $(y_i - \bar{y})$, their product, and $(x_i - \bar{x})^2$:
+
+| $i$ | $x_i$ | $y_i$ | $x_i - \bar{x}$ | $y_i - \bar{y}$ | $(x_i-\bar{x})(y_i-\bar{y})$ | $(x_i-\bar{x})^2$ |
+|---|---|---|---|---|---|---|
+| 1 | 1 | 40 | $1-3=-2$ | $40-56=-16$ | $(-2)(-16)=32$ | $(-2)^2=4$ |
+| 2 | 2 | 50 | $2-3=-1$ | $50-56=-6$ | $(-1)(-6)=6$ | $(-1)^2=1$ |
+| 3 | 3 | 55 | $3-3=0$ | $55-56=-1$ | $(0)(-1)=0$ | $0^2=0$ |
+| 4 | 4 | 65 | $4-3=1$ | $65-56=9$ | $(1)(9)=9$ | $1^2=1$ |
+| 5 | 5 | 70 | $5-3=2$ | $70-56=14$ | $(2)(14)=28$ | $2^2=4$ |
+| **Sum** | | | | | **75** | **10** |
+
+**Step 4c — Compute the slope:**
+
+$$\hat{\beta}_1 = \frac{75}{10} = 7.5$$
+
+This means: **for every 1 extra hour studied, the predicted score goes up by 7.5 points.**
+
+**Step 4d — Compute the intercept:**
+
+$$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \cdot \bar{x} = 56 - 7.5 \times 3 = 56 - 22.5 = 33.5$$
+
+**Our fitted line is:** $\hat{y} = 33.5 + 7.5x$
+
+**Step 4e — Make predictions and check residuals:**
+
+| $i$ | $x_i$ | $y_i$ | $\hat{y}_i = 33.5 + 7.5x_i$ | $e_i = y_i - \hat{y}_i$ |
+|---|---|---|---|---|
+| 1 | 1 | 40 | 41.0 | $-1.0$ |
+| 2 | 2 | 50 | 48.5 | $+1.5$ |
+| 3 | 3 | 55 | 56.0 | $-1.0$ |
+| 4 | 4 | 65 | 63.5 | $+1.5$ |
+| 5 | 5 | 70 | 71.0 | $-1.0$ |
+
+Notice: the errors are small (between $-1$ and $+1.5$) and they roughly balance out. No other straight line would produce a smaller RSS for this data.
+
+### Step 5 — Measuring How Good the Fit Is: $R^2$
+
+So we have a line. But is it a *good* line? What if the data were totally random — our line would have small-ish RSS too, just because we forced a line through it.
+
+We need to compare our line's performance against a **baseline**: what if we had no $x$ information at all and just predicted $\bar{y}$ (the mean) for everyone?
+
+We define:
+
+- **Total Sum of Squares (TSS):** How much variation exists in $y$ if we just use the mean as our prediction. $\mathrm{TSS} = \sum_{i=1}^{n}(y_i - \bar{y})^2$
+- **Residual Sum of Squares (RSS):** How much variation is left *after* our line. (Defined earlier.)
+
+The **coefficient of determination**, written $R^2$, is:
+
+$$R^2 = 1 - \frac{\mathrm{RSS}}{\mathrm{TSS}}$$
+
+**Plain English:** $R^2$ is the fraction of the total variation in $y$ that our line *explains*. It always lives between 0 and 1 (for simple linear regression):
+
+- $R^2 = 1$ → perfect fit, the line goes through every single point.
+- $R^2 = 0$ → our line is no better than just predicting the mean.
+- $R^2 = 0.85$ → our line explains 85% of the variation in $y$.
+
+**Let us compute $R^2$ for our example:**
+
+$\mathrm{RSS} = (-1)^2 + (1.5)^2 + (-1)^2 + (1.5)^2 + (-1)^2 = 1 + 2.25 + 1 + 2.25 + 1 = 7.5$
+
+$\mathrm{TSS} = (-16)^2 + (-6)^2 + (-1)^2 + (9)^2 + (14)^2 = 256 + 36 + 1 + 81 + 196 = 570$
+
+$$R^2 = 1 - \frac{7.5}{570} = 1 - 0.013 = 0.987$$
+
+Our line explains **98.7%** of the variation in exam scores. That is an excellent fit (because we deliberately chose tidy data).
+
+### Summary of Layer 1
+
+You now know everything needed to actually *use* simple linear regression:
+
+1. Compute $\bar{x}$ and $\bar{y}$ (the means).
+2. Use the formulas to get $\hat{\beta}_1$ and $\hat{\beta}_0$.
+3. Your fitted line is $\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x$.
+4. Compute $R^2$ to see how well it fits.
 
 ---
 
-## 4. Full Math Derivation
+## ⬛ LAYER 2 — Full Math Derivation (Intermediate)
 
-### 4.1 Defining "Best": The Ordinary Least Squares Criterion
+> 📌 Before reading this layer, make sure you are comfortable with Layer 1. This layer uses basic **calculus** — specifically, taking derivatives. If that is new to you, here is a two-minute refresher:
+>
+> A **derivative** of a function tells you its slope at any point. If $f(x) = x^2$, the derivative is $f'(x) = 2x$. At $x = 3$, the slope is $2 \times 3 = 6$. When we minimise a function, we set its derivative to zero — because at a minimum, the slope is flat (zero). That is the only tool we need here.
 
-We need a precise definition of what makes one line better than another. The standard choice is **Ordinary Least Squares (OLS)**: find $\hat{\beta}_0$ and $\hat{\beta}_1$ that minimize the **Residual Sum of Squares (RSS)**:
+### 2.1 — Setting Up the Optimisation Problem
 
-$$\text{RSS}(\beta_0, \beta_1) = \sum_{i=1}^{n} (y_i - \beta_0 - \beta_1 x_i)^2 \tag{4}$$
+We want to find $\beta_0$ and $\beta_1$ that minimise:
 
-*Why squared errors?* Three reasons: (1) Squaring makes all errors positive, so positive and negative errors don't cancel. (2) Squaring penalizes large errors more than small ones — a single massive miss is worse than several small misses. (3) The square function is smooth and differentiable everywhere, making calculus-based optimization clean.
+$$\mathrm{RSS}(\beta_0, \beta_1) = \sum_{i=1}^{n} (y_i - \beta_0 - \beta_1 x_i)^2 \tag{1}$$
 
-*Why not absolute errors?* You could use $\sum |y_i - \beta_0 - \beta_1 x_i|$ (called LAD regression), but the absolute value is not differentiable at zero, making optimization harder. OLS has a beautiful closed-form solution.
+We wrote it as $\mathrm{RSS}(\beta_0, \beta_1)$ to be explicit that RSS is a function of both unknowns — the data ($x_i$, $y_i$) is fixed; only $\beta_0$ and $\beta_1$ can vary.
 
-### 4.2 Setting Up the Optimization
-
-We have a function of two variables: $\text{RSS}(\beta_0, \beta_1)$. To minimize it, we take the **partial derivative** with respect to each parameter, set both to zero, and solve the resulting system of two equations. These two equations are called the **Normal Equations**.
-
-Let's write out RSS explicitly:
-
-$$\text{RSS} = \sum_{i=1}^{n} (y_i - \beta_0 - \beta_1 x_i)^2 \tag{5}$$
-
-### 4.3 Taking the Partial Derivative with Respect to $\beta_0$
-
-$$\frac{\partial \text{RSS}}{\partial \beta_0} = \sum_{i=1}^{n} 2(y_i - \beta_0 - \beta_1 x_i) \cdot (-1) \tag{6}$$
-
-*Why $(-1)$?* By the chain rule: the derivative of $(y_i - \beta_0 - \beta_1 x_i)^2$ with respect to $\beta_0$ is $2(y_i - \beta_0 - \beta_1 x_i)$ times the derivative of the inner function $(y_i - \beta_0 - \beta_1 x_i)$ with respect to $\beta_0$, which is $-1$.
-
-Setting this to zero:
-
-$$\sum_{i=1}^{n} 2(y_i - \beta_0 - \beta_1 x_i) \cdot (-1) = 0$$
-
-Dividing both sides by $-2$:
-
-$$\sum_{i=1}^{n} (y_i - \beta_0 - \beta_1 x_i) = 0 \tag{7}$$
-
-Expanding the sum (using the fact that the sum is linear):
-
-$$\sum_{i=1}^{n} y_i - \sum_{i=1}^{n} \beta_0 - \sum_{i=1}^{n} \beta_1 x_i = 0$$
-
-$$\sum_{i=1}^{n} y_i - n\beta_0 - \beta_1 \sum_{i=1}^{n} x_i = 0 \tag{8}$$
-
-*Why $\sum_{i=1}^n \beta_0 = n\beta_0$?* Because $\beta_0$ is a constant — it's summed $n$ times.
-
-Dividing equation (8) through by $n$:
-
-$$\bar{y} - \beta_0 - \beta_1 \bar{x} = 0 \tag{9}$$
-
-where $\bar{y} = \frac{1}{n}\sum_{i=1}^n y_i$ is the **sample mean of** $y$, and $\bar{x} = \frac{1}{n}\sum_{i=1}^n x_i$ is the **sample mean of** $x$.
-
-This gives us the **first normal equation**:
-
-$$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x} \tag{10}$$
-
-**Geometric insight from equation (10):** The fitted line always passes through the point $(\bar{x}, \bar{y})$ — the center of mass of the data. This is guaranteed by the OLS solution, regardless of the data. The line pivots around this central point.
-
-### 4.4 Taking the Partial Derivative with Respect to $\beta_1$
-
-$$\frac{\partial \text{RSS}}{\partial \beta_1} = \sum_{i=1}^{n} 2(y_i - \beta_0 - \beta_1 x_i) \cdot (-x_i) \tag{11}$$
-
-*Why $(-x_i)$?* By the chain rule: derivative of $(y_i - \beta_0 - \beta_1 x_i)^2$ with respect to $\beta_1$ is $2(y_i - \beta_0 - \beta_1 x_i)$ times the derivative of the inner function with respect to $\beta_1$, which is $-x_i$.
-
-Setting to zero and dividing by $-2$:
-
-$$\sum_{i=1}^{n} x_i(y_i - \beta_0 - \beta_1 x_i) = 0 \tag{12}$$
-
-Expanding:
-
-$$\sum_{i=1}^{n} x_i y_i - \beta_0 \sum_{i=1}^{n} x_i - \beta_1 \sum_{i=1}^{n} x_i^2 = 0 \tag{13}$$
-
-### 4.5 Solving the Normal Equations
-
-From equation (10), we know $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$. Substitute this into equation (13):
-
-$$\sum_{i=1}^{n} x_i y_i - (\bar{y} - \hat{\beta}_1 \bar{x}) \sum_{i=1}^{n} x_i - \hat{\beta}_1 \sum_{i=1}^{n} x_i^2 = 0$$
-
-Note that $\sum_{i=1}^n x_i = n\bar{x}$, so:
-
-$$\sum_{i=1}^{n} x_i y_i - (\bar{y} - \hat{\beta}_1 \bar{x})(n\bar{x}) - \hat{\beta}_1 \sum_{i=1}^{n} x_i^2 = 0$$
-
-$$\sum_{i=1}^{n} x_i y_i - n\bar{x}\bar{y} + \hat{\beta}_1 n\bar{x}^2 - \hat{\beta}_1 \sum_{i=1}^{n} x_i^2 = 0$$
-
-Collecting $\hat{\beta}_1$ terms on the right:
-
-$$\sum_{i=1}^{n} x_i y_i - n\bar{x}\bar{y} = \hat{\beta}_1 \left(\sum_{i=1}^{n} x_i^2 - n\bar{x}^2\right) \tag{14}$$
-
-*Why is this valid?* Simple algebra — we just moved $\hat{\beta}_1$ terms to one side.
-
-Solving for $\hat{\beta}_1$:
-
-$$\hat{\beta}_1 = \frac{\sum_{i=1}^{n} x_i y_i - n\bar{x}\bar{y}}{\sum_{i=1}^{n} x_i^2 - n\bar{x}^2} \tag{15}$$
-
-### 4.6 Simplifying the Formula for $\hat{\beta}_1$
-
-The numerator and denominator of (15) have elegant simplifications. Let's work through them carefully.
-
-**Simplifying the numerator:** We claim that:
-
-$$\sum_{i=1}^{n} x_i y_i - n\bar{x}\bar{y} = \sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y}) \tag{16}$$
-
-*Proof:* Expand the right side:
-
-$$\sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y}) = \sum_{i=1}^{n} \left(x_i y_i - x_i \bar{y} - \bar{x} y_i + \bar{x}\bar{y}\right)$$
-
-$$= \sum_{i=1}^{n} x_i y_i - \bar{y}\sum_{i=1}^{n} x_i - \bar{x}\sum_{i=1}^{n} y_i + n\bar{x}\bar{y}$$
-
-Now, $\sum_{i=1}^n x_i = n\bar{x}$ and $\sum_{i=1}^n y_i = n\bar{y}$, so:
-
-$$= \sum_{i=1}^{n} x_i y_i - \bar{y}(n\bar{x}) - \bar{x}(n\bar{y}) + n\bar{x}\bar{y}$$
-
-$$= \sum_{i=1}^{n} x_i y_i - n\bar{x}\bar{y} - n\bar{x}\bar{y} + n\bar{x}\bar{y}$$
-
-$$= \sum_{i=1}^{n} x_i y_i - n\bar{x}\bar{y} \quad \checkmark$$
-
-This quantity $\sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})$ is called the **sample covariance of $x$ and $y$** (unnormalized), written $S_{xy}$.
-
-**Simplifying the denominator:** By the exact same algebra (just replace $y_i$ with $x_i$):
-
-$$\sum_{i=1}^{n} x_i^2 - n\bar{x}^2 = \sum_{i=1}^{n} (x_i - \bar{x})^2 \tag{17}$$
-
-This quantity is called the **sample variance of $x$** (unnormalized), written $S_{xx}$.
-
-So the final, clean formula for the OLS slope estimator is:
-
-$$\boxed{\hat{\beta}_1 = \frac{\sum_{i=1}^{n}(x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^{n}(x_i - \bar{x})^2} = \frac{S_{xy}}{S_{xx}}} \tag{18}$$
-
-And the intercept:
-
-$$\boxed{\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}} \tag{19}$$
-
-### 4.7 Connecting to Correlation
-
-The **sample correlation coefficient** $r$ between $x$ and $y$ is:
-
-$$r = \frac{\sum_{i=1}^{n}(x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum_{i=1}^{n}(x_i - \bar{x})^2} \cdot \sqrt{\sum_{i=1}^{n}(y_i - \bar{y})^2}} = \frac{S_{xy}}{\sqrt{S_{xx} \cdot S_{yy}}} \tag{20}$$
-
-where $S_{yy} = \sum_{i=1}^n (y_i - \bar{y})^2$ is the unnormalized sample variance of $y$.
-
-We can re-express the slope as:
-
-$$\hat{\beta}_1 = r \cdot \frac{s_y}{s_x} \tag{21}$$
-
-where $s_x = \sqrt{\frac{S_{xx}}{n-1}}$ and $s_y = \sqrt{\frac{S_{yy}}{n-1}}$ are the **sample standard deviations** of $x$ and $y$ respectively.
-
-*Why is this useful?* Equation (21) tells us the slope is the correlation scaled by the ratio of standard deviations. If we standardize both variables (mean 0, std 1), the slope equals the correlation. This is a profound connection.
-
-### 4.8 Proving the Minimum (Not Just a Critical Point)
-
-We took derivatives and found a critical point. How do we know it's a minimum and not a maximum or saddle point? We use the **second-order conditions**.
-
-The Hessian matrix of RSS with respect to $(\beta_0, \beta_1)$ is:
-
-$$H = \begin{pmatrix} \frac{\partial^2 \text{RSS}}{\partial \beta_0^2} & \frac{\partial^2 \text{RSS}}{\partial \beta_0 \partial \beta_1} \\ \frac{\partial^2 \text{RSS}}{\partial \beta_1 \partial \beta_0} & \frac{\partial^2 \text{RSS}}{\partial \beta_1^2} \end{pmatrix}$$
-
-Computing each entry from equation (5):
-
-$$\frac{\partial^2 \text{RSS}}{\partial \beta_0^2} = 2n \tag{22}$$
-
-$$\frac{\partial^2 \text{RSS}}{\partial \beta_1^2} = 2\sum_{i=1}^{n} x_i^2 \tag{23}$$
-
-$$\frac{\partial^2 \text{RSS}}{\partial \beta_0 \partial \beta_1} = 2\sum_{i=1}^{n} x_i \tag{24}$$
-
-So:
-
-$$H = 2\begin{pmatrix} n & \sum x_i \\ \sum x_i & \sum x_i^2 \end{pmatrix}$$
-
-For a minimum, we need $H$ to be **positive definite** (all eigenvalues positive). The sufficient condition: (1) top-left entry is positive: $2n > 0$ ✓ (always true for $n \geq 1$), and (2) the determinant is positive:
-
-$$\det(H) = 4\left(n \sum x_i^2 - \left(\sum x_i\right)^2\right) = 4n^2\left(\frac{1}{n}\sum x_i^2 - \bar{x}^2\right) = 4n^2 \cdot \text{Var}(x)$$
-
-This is positive as long as **not all $x_i$ are identical** (i.e., there is some variation in $x$). If all $x_i$ are the same, you literally cannot fit a line — the denominator of $\hat{\beta}_1$ is zero.
-
-Conclusion: The critical point we found is a strict global minimum, and RSS is a **convex function** (in fact, strictly convex when $x$ has variance), so it has exactly one minimum.
-
-### 4.9 Measuring Fit: The Coefficient of Determination $R^2$
-
-How good is our fitted line? We decompose the total variation in $y$ into explained and unexplained parts.
-
-Define:
-
-- **Total Sum of Squares (TSS)**: $\text{TSS} = \sum_{i=1}^n (y_i - \bar{y})^2$ — total variation in $y$.
-- **Residual Sum of Squares (RSS)**: $\text{RSS} = \sum_{i=1}^n (y_i - \hat{y}_i)^2$ — variation not explained by the model.
-- **Explained Sum of Squares (ESS)**: $\text{ESS} = \sum_{i=1}^n (\hat{y}_i - \bar{y})^2$ — variation explained by the model.
-
-**Theorem:** $\text{TSS} = \text{ESS} + \text{RSS}$
-
-*Proof:*
-
-$$\sum_{i=1}^n (y_i - \bar{y})^2 = \sum_{i=1}^n \left[(y_i - \hat{y}_i) + (\hat{y}_i - \bar{y})\right]^2$$
-
-$$= \sum_{i=1}^n (y_i - \hat{y}_i)^2 + 2\sum_{i=1}^n (y_i - \hat{y}_i)(\hat{y}_i - \bar{y}) + \sum_{i=1}^n (\hat{y}_i - \bar{y})^2$$
-
-The cross-term $\sum_{i=1}^n (y_i - \hat{y}_i)(\hat{y}_i - \bar{y}) = \sum_{i=1}^n e_i(\hat{y}_i - \bar{y})$ is zero. *Why?* The OLS residuals $e_i$ are orthogonal to fitted values $\hat{y}_i$ (and to any linear combination of the $x_i$s including $\bar{y}$). This orthogonality follows directly from the normal equations — see it as the geometric consequence of projecting $y$ onto the column space of $X$.
-
-Therefore: $\text{TSS} = \text{RSS} + \text{ESS}$ ✓
-
-The **coefficient of determination** $R^2$ is:
-
-$$\boxed{R^2 = \frac{\text{ESS}}{\text{TSS}} = 1 - \frac{\text{RSS}}{\text{TSS}}} \tag{25}$$
-
-$R^2 \in [0, 1]$ (for simple linear regression — it can be negative for multiple regression if you fit without an intercept). It tells you the **fraction of variance in $y$ explained by the linear relationship with $x$**.
-
-**Key fact:** In simple linear regression (with an intercept), $R^2 = r^2$, the square of the correlation coefficient. This is a non-trivial result — the model's explanatory power exactly equals the squared correlation.
-
-*Proof:*
-$$R^2 = \frac{\text{ESS}}{\text{TSS}} = \frac{\hat{\beta}_1^2 S_{xx}}{S_{yy}} = \frac{\left(\frac{S_{xy}}{S_{xx}}\right)^2 S_{xx}}{S_{yy}} = \frac{S_{xy}^2}{S_{xx} \cdot S_{yy}} = r^2 \tag{26}$$
-
-### 4.10 Estimating the Error Variance $\sigma^2$
-
-We assumed $\varepsilon_i \sim \mathcal{N}(0, \sigma^2)$, but $\sigma^2$ is unknown. We estimate it from the residuals:
-
-$$\hat{\sigma}^2 = \frac{\text{RSS}}{n - 2} = \frac{\sum_{i=1}^{n} e_i^2}{n-2} \tag{27}$$
-
-*Why divide by $n-2$ and not $n$?* We lose **2 degrees of freedom** because we estimated 2 parameters ($\beta_0$ and $\beta_1$) from the data. The residuals are constrained to satisfy two conditions (from the two normal equations): $\sum e_i = 0$ and $\sum x_i e_i = 0$. So only $n-2$ of the $n$ residuals are "free." Dividing by $n-2$ makes $\hat{\sigma}^2$ an **unbiased estimator** of $\sigma^2$, meaning $\mathbb{E}[\hat{\sigma}^2] = \sigma^2$.
-
-### 4.11 Properties of the OLS Estimators
-
-Under the Gauss-Markov assumptions:
-
-**Unbiasedness:**
-$$\mathbb{E}[\hat{\beta}_1] = \beta_1, \quad \mathbb{E}[\hat{\beta}_0] = \beta_0 \tag{28}$$
-
-*Proof for $\hat{\beta}_1$:*
-
-$$\hat{\beta}_1 = \frac{\sum(x_i - \bar{x})(y_i - \bar{y})}{\sum(x_i - \bar{x})^2} = \frac{\sum(x_i - \bar{x})y_i}{\sum(x_i - \bar{x})^2}$$
-
-(The $\bar{y}$ version: $\sum(x_i-\bar{x})\bar{y} = \bar{y}\sum(x_i-\bar{x}) = \bar{y} \cdot 0 = 0$, so we can drop it.)
-
-Let $w_i = \frac{x_i - \bar{x}}{S_{xx}}$ where $S_{xx} = \sum(x_i-\bar{x})^2$. Then $\hat{\beta}_1 = \sum w_i y_i$, a linear combination of the $y_i$s.
-
-$$\mathbb{E}[\hat{\beta}_1] = \sum w_i \mathbb{E}[y_i] = \sum w_i (\beta_0 + \beta_1 x_i)$$
-
-$$= \beta_0 \sum w_i + \beta_1 \sum w_i x_i$$
-
-Now: $\sum w_i = \frac{\sum(x_i - \bar{x})}{S_{xx}} = \frac{0}{S_{xx}} = 0$ and $\sum w_i x_i = \frac{\sum(x_i-\bar{x})x_i}{S_{xx}} = \frac{S_{xx}}{S_{xx}} = 1$.
-
-Therefore $\mathbb{E}[\hat{\beta}_1] = \beta_0 \cdot 0 + \beta_1 \cdot 1 = \beta_1$ ✓
-
-**Variance:**
-$$\text{Var}(\hat{\beta}_1) = \frac{\sigma^2}{S_{xx}} = \frac{\sigma^2}{\sum(x_i - \bar{x})^2} \tag{29}$$
-
-$$\text{Var}(\hat{\beta}_0) = \sigma^2 \left(\frac{1}{n} + \frac{\bar{x}^2}{S_{xx}}\right) \tag{30}$$
-
-*Proof of (29):* Since $\hat{\beta}_1 = \sum w_i y_i$ with $y_i$ independent:
-
-$$\text{Var}(\hat{\beta}_1) = \sum w_i^2 \text{Var}(y_i) = \sigma^2 \sum w_i^2 = \sigma^2 \frac{\sum(x_i-\bar{x})^2}{S_{xx}^2} = \frac{\sigma^2}{S_{xx}}$$
-
-**Gauss-Markov Theorem:** Among all **linear unbiased estimators** of $\beta_1$, the OLS estimator $\hat{\beta}_1$ has the **smallest variance**. In other words, OLS is **BLUE** — Best Linear Unbiased Estimator. This is a powerful optimality result — you can't do better (in terms of variance) if you want a linear, unbiased estimator.
-
----
-
-## 5. Deep Intuition Behind the Math
-
-### Why Does the Formula for $\hat{\beta}_1$ Look Like This?
-
-Look at the slope formula again:
-
-$$\hat{\beta}_1 = \frac{\sum(x_i - \bar{x})(y_i - \bar{y})}{\sum(x_i - \bar{x})^2}$$
-
-The **numerator** measures: "When $x$ is above its average, is $y$ also above its average? And when $x$ is below average, is $y$ below average?" That's covariance — how $x$ and $y$ move together relative to their centers.
-
-The **denominator** measures: "How spread out is $x$?" It normalizes by the variation in $x$.
-
-Together: the slope is "how much $y$ co-varies with $x$, per unit of $x$'s own variance." This is exactly what "slope" should mean — it's measuring the "bang per buck" of moving $x$.
-
-### What Happens If We Change Key Assumptions?
-
-**If errors are not zero-mean ($\mathbb{E}[\varepsilon_i] \neq 0$):** The estimator $\hat{\beta}_0$ will be biased. The intercept absorbs the mean error, but if that mean isn't zero, you're systematically over- or under-predicting.
-
-**If errors are heteroscedastic (varying variance):** OLS is still unbiased, but it's no longer BLUE. Weighted Least Squares (WLS), which gives less weight to high-variance observations, becomes more efficient. OLS ignores the reliability of each observation.
-
-**If $x$ and $\varepsilon$ are correlated (endogeneity):** This is the most serious violation. $\hat{\beta}_1$ becomes **biased AND inconsistent** — even with infinite data, you won't converge to the truth. This happens when there are omitted variables that affect both $x$ and $y$ (called omitted variable bias). The solution is Instrumental Variables (IV) regression.
-
-**If the true relationship is nonlinear:** The OLS line gives the best linear approximation, but it's still just an approximation. The residuals will show systematic patterns (curved residual plots), and predictions will be systematically wrong in certain regions.
-
-**If errors are not independent:** The variance formulas (29) and (30) are wrong. Standard errors are underestimated, hypothesis tests give false positives. Time-series data is especially prone to this (autocorrelated errors).
-
-### Common Misconceptions
-
-**Misconception 1: "High $R^2$ means the model is good."**
-Wrong. $R^2$ measures explanatory power, not predictive accuracy, causal validity, or model correctness. You can get $R^2 = 0.99$ by fitting noise, or with a model that violates all assumptions. Always check residual plots.
-
-**Misconception 2: "Correlation means causation, so $\hat{\beta}_1$ tells us the causal effect."**
-Wrong. OLS gives the best linear predictor, not the causal effect. If $x$ and $y$ are both caused by a third variable $z$ (a "confounder"), you'll find a non-zero $\hat{\beta}_1$ even if $x$ has zero causal effect on $y$. Causality requires additional assumptions (randomized experiments, or careful causal modeling).
-
-**Misconception 3: "The line goes through the data."**
-The line goes through $(\bar{x}, \bar{y})$, not through every data point. The whole point is that the data is noisy, and the line is a smooth summary.
-
-**Misconception 4: "Large sample size cures all assumption violations."**
-Large $n$ fixes problems of estimation uncertainty (variances shrink), but it cannot fix bias from violated assumptions. A biased estimator stays biased as $n \to \infty$; it just converges more precisely to the wrong answer.
-
-**Misconception 5: "OLS minimizes horizontal distances."**
-OLS minimizes *vertical* distances (residuals in the $y$ direction). This makes sense because we're predicting $y$ from $x$: $x$ is fixed/known, $y$ is what we're uncertain about. If you want to minimize perpendicular distances, that's called **Total Least Squares (Orthogonal Regression)**.
-
----
-
-## 6. Visual Explanation
-
-### 6.1 The OLS Setup — What We're Minimizing
-
-```
-y
-│                              ●  (y_i)
-│                          ↕  |  ← residual e_i = y_i - ŷ_i
-│                              ○  (ŷ_i on the line)
-│                    ●
-│               ○ ↗
-│          ● ↗
-│     ● ↗
-│  ↗●
-│╱ ← fitted line: ŷ = β̂₀ + β̂₁x
-└──────────────────────────────── x
-```
-
-Each vertical arrow is a residual. OLS minimizes the sum of squared lengths of these arrows.
-
-### 6.2 Geometric View — Projection
-
-Think of the $n$ observations as two vectors in $\mathbb{R}^n$:
-- $\mathbf{y} = (y_1, y_2, \ldots, y_n)^T$ — the response vector
-- Column space of $X$ (spanned by $\mathbf{1}$ and $\mathbf{x}$) — a 2D plane in $\mathbb{R}^n$
-
-OLS finds $\hat{\mathbf{y}}$ as the **orthogonal projection** of $\mathbf{y}$ onto this plane. The residual vector $\mathbf{e} = \mathbf{y} - \hat{\mathbf{y}}$ is perpendicular to the column space — this is why $\sum e_i = 0$ and $\sum x_i e_i = 0$.
-
-```
-ℝⁿ space:
-         y  (actual response vector)
-        /|
-       / |  ← e = y - ŷ (residual vector, perpendicular to plane)
-      /  |
-     /   |
-    /    ↓
-   ŷ ←── projection of y onto column space of X
-   (on the plane spanned by 1 and x)
-   
-   The plane represents all possible linear combinations: β₀·1 + β₁·x
-```
-
-### 6.3 RSS Surface — A Bowl
-
-The RSS as a function of $(\beta_0, \beta_1)$ is a **paraboloid** — a smooth bowl shape opening upward:
+**Geometric picture:** If you plotted RSS as a surface over a $(\beta_0, \beta_1)$ grid, it would look like a smooth bowl. We want the very bottom of that bowl.
 
 ```
 RSS
-│   ╲         ╱
-│    ╲       ╱
-│     ╲     ╱
-│      ╲   ╱
-│       ╲ ╱
-│        ★  ← unique minimum at (β̂₀, β̂₁)
-│
-└────────────── β₀, β₁ plane
+│     ╲           ╱
+│      ╲         ╱
+│       ╲       ╱
+│        ╲     ╱
+│         ╲   ╱
+│          ╲ ╱
+│           ★  ← minimum (our answer)
+└─────────────────── β₀, β₁ plane
 ```
 
-Convexity guarantees a unique global minimum. No local minima to get stuck in — this is why OLS has a closed-form solution while neural networks don't.
+### 2.2 — Deriving $\hat{\beta}_0$: The First Normal Equation
 
-### 6.4 The TSS = ESS + RSS Decomposition
+To minimise, we take the partial derivative with respect to $\beta_0$ and set it to zero.
 
-```
-y
-│    ●
-│    |← (y_i - ȳ) = total deviation
-│    |
-│    ○ ← ŷ_i = predicted, so (ŷ_i - ȳ) is "explained"
-│    |← (y_i - ŷ_i) = residual, "unexplained"
-│    |
-ȳ ───────────────── x
-```
+**Partial derivative** means: treat $\beta_1$ as a constant and differentiate only with respect to $\beta_0$.
 
-Every individual point's deviation from $\bar{y}$ splits into two parts: the part the line explains (how far the predicted value is from $\bar{y}$) and the part the line doesn't explain (the residual).
+$$\frac{\partial \, \mathrm{RSS}}{\partial \beta_0} = \sum_{i=1}^{n} 2(y_i - \beta_0 - \beta_1 x_i) \cdot (-1) = 0 \tag{2}$$
 
-### 6.5 Mermaid: The Full Pipeline
+*Why $(-1)$ at the end?* By the chain rule: derivative of $(y_i - \beta_0 - \beta_1 x_i)^2$ is $2(\ldots)$ times the derivative of the inside with respect to $\beta_0$, which is $-1$.
 
-```mermaid
-flowchart TD
-    A["Raw Data: {(x₁,y₁), ..., (xₙ,yₙ)}"] --> B[Compute x̄, ȳ]
-    B --> C["Compute Sxx = Σ(xᵢ-x̄)²"]
-    B --> D["Compute Sxy = Σ(xᵢ-x̄)(yᵢ-ȳ)"]
-    C --> E["β̂₁ = Sxy / Sxx"]
-    D --> E
-    E --> F["β̂₀ = ȳ - β̂₁x̄"]
-    F --> G["Fitted Line: ŷ = β̂₀ + β̂₁x"]
-    G --> H["Compute Residuals: eᵢ = yᵢ - ŷᵢ"]
-    H --> I["RSS = Σeᵢ²"]
-    I --> J["σ̂² = RSS/(n-2)"]
-    I --> K["R² = 1 - RSS/TSS"]
-    K --> L{{"Model Evaluation"}}
-    J --> L
-```
+Divide both sides by $-2$:
 
-### 6.6 Mermaid: Assumptions and What Breaks When Violated
+$$\sum_{i=1}^{n} (y_i - \beta_0 - \beta_1 x_i) = 0 \tag{3}$$
 
-```mermaid
-flowchart LR
-    A[Gauss-Markov\nAssumptions] --> B[Linearity]
-    A --> C[Independence]
-    A --> D[Homoscedasticity]
-    A --> E[Zero Mean Error]
-    A --> F[No Measurement Error\nin x]
-    
-    B -->|Violated| B1["Nonlinear bias\nResidual plots show curves"]
-    C -->|Violated| C1["Std errors wrong\nFalse hypothesis tests"]
-    D -->|Violated| D1["OLS not BLUE\nWLS is better"]
-    E -->|Violated| E1["β̂₀ is biased"]
-    F -->|Violated| F1["Attenuation bias\nSlope biased toward 0"]
-```
+Split the sum:
+
+$$\sum_{i=1}^{n} y_i - n\beta_0 - \beta_1 \sum_{i=1}^{n} x_i = 0 \tag{4}$$
+
+*Why $\sum \beta_0 = n\beta_0$?* Because $\beta_0$ is a constant — adding it $n$ times gives $n\beta_0$.
+
+Divide through by $n$:
+
+$$\bar{y} - \beta_0 - \beta_1 \bar{x} = 0 \tag{5}$$
+
+Rearrange:
+
+$$\boxed{\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}} \tag{6}$$
+
+**What this tells us geometrically:** The best-fit line always passes through the point $(\bar{x}, \bar{y})$ — the centre of mass of all the data. No matter what the data looks like, the OLS line is anchored to this centre.
+
+### 2.3 — Deriving $\hat{\beta}_1$: The Second Normal Equation
+
+Take the partial derivative with respect to $\beta_1$:
+
+$$\frac{\partial \, \mathrm{RSS}}{\partial \beta_1} = \sum_{i=1}^{n} 2(y_i - \beta_0 - \beta_1 x_i) \cdot (-x_i) = 0 \tag{7}$$
+
+*Why $(-x_i)$?* Chain rule again — the derivative of the inside $(y_i - \beta_0 - \beta_1 x_i)$ with respect to $\beta_1$ is $-x_i$.
+
+Divide by $-2$:
+
+$$\sum_{i=1}^{n} x_i(y_i - \beta_0 - \beta_1 x_i) = 0 \tag{8}$$
+
+Expand:
+
+$$\sum_{i=1}^{n} x_i y_i - \beta_0 \sum_{i=1}^{n} x_i - \beta_1 \sum_{i=1}^{n} x_i^2 = 0 \tag{9}$$
+
+Now substitute $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$ from equation (6) — replacing $\beta_0$:
+
+$$\sum_{i=1}^{n} x_i y_i - (\bar{y} - \hat{\beta}_1 \bar{x})\sum_{i=1}^{n} x_i - \hat{\beta}_1 \sum_{i=1}^{n} x_i^2 = 0 \tag{10}$$
+
+Note that $\sum_{i=1}^{n} x_i = n\bar{x}$, so:
+
+$$\sum_{i=1}^{n} x_i y_i - \bar{y}(n\bar{x}) + \hat{\beta}_1 \bar{x}(n\bar{x}) - \hat{\beta}_1 \sum_{i=1}^{n} x_i^2 = 0 \tag{11}$$
+
+Collect the $\hat{\beta}_1$ terms on the right:
+
+$$\sum_{i=1}^{n} x_i y_i - n\bar{x}\bar{y} = \hat{\beta}_1\left(\sum_{i=1}^{n} x_i^2 - n\bar{x}^2\right) \tag{12}$$
+
+Solve for $\hat{\beta}_1$:
+
+$$\hat{\beta}_1 = \frac{\sum_{i=1}^{n} x_i y_i - n\bar{x}\bar{y}}{\sum_{i=1}^{n} x_i^2 - n\bar{x}^2} \tag{13}$$
+
+### 2.4 — Simplifying to the Clean Form
+
+The numerator and denominator of equation (13) have elegant alternative forms. Let us derive them.
+
+**Claim:** $\displaystyle\sum_{i=1}^{n} x_i y_i - n\bar{x}\bar{y} = \sum_{i=1}^{n}(x_i - \bar{x})(y_i - \bar{y})$
+
+**Proof:** Expand the right side:
+
+$$\sum_{i=1}^{n}(x_i - \bar{x})(y_i - \bar{y}) = \sum_{i=1}^{n}\left(x_i y_i - x_i\bar{y} - \bar{x}y_i + \bar{x}\bar{y}\right)$$
+
+$$= \sum x_i y_i - \bar{y}\underbrace{\sum x_i}_{n\bar{x}} - \bar{x}\underbrace{\sum y_i}_{n\bar{y}} + n\bar{x}\bar{y}$$
+
+$$= \sum x_i y_i - n\bar{x}\bar{y} - n\bar{x}\bar{y} + n\bar{x}\bar{y} = \sum x_i y_i - n\bar{x}\bar{y} \quad \checkmark$$
+
+This quantity is called $S_{xy}$ (the **sample covariance**, unnormalized).
+
+**The same trick for the denominator** (replace $y_i$ with $x_i$ throughout):
+
+$$\sum_{i=1}^{n} x_i^2 - n\bar{x}^2 = \sum_{i=1}^{n}(x_i - \bar{x})^2$$
+
+This is called $S_{xx}$ (the **sample variance of $x$**, unnormalized).
+
+So the final clean form is:
+
+$$\boxed{\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{\sum_{i=1}^{n}(x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^{n}(x_i - \bar{x})^2}} \tag{14}$$
+
+### 2.5 — What the Slope Formula Is Actually Saying
+
+Look at equation (14) carefully:
+
+- The **numerator** $S_{xy}$: When $x$ is above its average, is $y$ also above its average? The product $(x_i - \bar{x})(y_i - \bar{y})$ is positive when both deviate in the same direction, negative when they deviate in opposite directions. Summing these products captures how $x$ and $y$ **move together**.
+
+- The **denominator** $S_{xx}$: How spread out are the $x$ values? This normalises the numerator — you divide by how much $x$ varies on its own.
+
+Together: the slope is **"how much $y$ moves with $x$, per unit of $x$'s own spread."**
+
+### 2.6 — Verifying with Our Example
+
+From Layer 1, we already computed: $S_{xy} = 75$, $S_{xx} = 10$.
+
+$$\hat{\beta}_1 = \frac{75}{10} = 7.5 \quad \checkmark$$
+
+$$\hat{\beta}_0 = 56 - 7.5 \times 3 = 33.5 \quad \checkmark$$
+
+### 2.7 — The TSS = ESS + RSS Decomposition (Deriving $R^2$)
+
+Define three quantities:
+
+$$\mathrm{TSS} = \sum_{i=1}^{n}(y_i - \bar{y})^2 \quad \text{(total spread of } y \text{)} \tag{15}$$
+
+$$\mathrm{ESS} = \sum_{i=1}^{n}(\hat{y}_i - \bar{y})^2 \quad \text{(spread explained by the line)} \tag{16}$$
+
+$$\mathrm{RSS} = \sum_{i=1}^{n}(y_i - \hat{y}_i)^2 \quad \text{(spread left unexplained)} \tag{17}$$
+
+**Theorem:** $\mathrm{TSS} = \mathrm{ESS} + \mathrm{RSS}$
+
+**Proof:** Write $y_i - \bar{y} = (\hat{y}_i - \bar{y}) + (y_i - \hat{y}_i)$, then square both sides and sum:
+
+$$\sum(y_i - \bar{y})^2 = \sum(\hat{y}_i - \bar{y})^2 + 2\sum(\hat{y}_i - \bar{y})(y_i - \hat{y}_i) + \sum(y_i - \hat{y}_i)^2$$
+
+The cross-term $\sum(\hat{y}_i - \bar{y})(y_i - \hat{y}_i) = 0$.
+
+*Why is the cross-term zero?* This follows directly from the normal equations we derived: they guarantee that residuals $(y_i - \hat{y}_i)$ are uncorrelated with fitted values $\hat{y}_i$. Think of it as: the line has "soaked up" all the linear information from $x$; what remains (residuals) has nothing left to correlate with.
+
+Therefore: $\mathrm{TSS} = \mathrm{ESS} + \mathrm{RSS}$ ✓
+
+And so:
+
+$$R^2 = \frac{\mathrm{ESS}}{\mathrm{TSS}} = 1 - \frac{\mathrm{RSS}}{\mathrm{TSS}} \tag{18}$$
+
+### 2.8 — $R^2$ Equals the Squared Correlation
+
+In simple linear regression, there is a beautiful fact:
+
+$$R^2 = r^2 \tag{19}$$
+
+where $r$ is the **Pearson correlation coefficient**:
+
+$$r = \frac{S_{xy}}{\sqrt{S_{xx} \cdot S_{yy}}} \tag{20}$$
+
+and $S_{yy} = \sum_{i=1}^{n}(y_i - \bar{y})^2 = \mathrm{TSS}$.
+
+**Why?** The slope is $\hat{\beta}_1 = S_{xy}/S_{xx}$. The ESS works out to $\hat{\beta}_1^2 \cdot S_{xx} = S_{xy}^2 / S_{xx}$. So:
+
+$$R^2 = \frac{\mathrm{ESS}}{\mathrm{TSS}} = \frac{S_{xy}^2/S_{xx}}{S_{yy}} = \frac{S_{xy}^2}{S_{xx} \cdot S_{yy}} = r^2$$
+
+This is unique to simple (one-variable) regression. In multiple regression, $R^2$ is no longer equal to the square of any single correlation.
 
 ---
 
-## 7. Code From Scratch (NumPy Only)
+## ⬛ LAYER 3 — Deep & Advanced
+
+> ⚠️ This section is advanced. Come back after you are comfortable with Layers 1 and 2.
+> You will need: basic probability, the idea of expected value, and some familiarity with linear algebra.
+
+### 3.1 — The Statistical Model and Assumptions
+
+Layers 1 and 2 treated regression as a pure **optimisation problem** — find the line that minimises RSS. But to make probabilistic statements ("is the slope significant?", "what is the confidence interval?"), we need a **statistical model** with assumptions.
+
+The classical assumptions (called the **Gauss-Markov assumptions**) are:
+
+1. **Linearity** — The true relationship is indeed $y_i = \beta_0 + \beta_1 x_i + \varepsilon_i$.
+2. **Zero mean errors** — $\mathbb{E}[\varepsilon_i] = 0$. Errors average out to zero.
+3. **Homoscedasticity** — $\mathrm{Var}(\varepsilon_i) = \sigma^2$ for all $i$. Every data point has the same error variance ($\sigma^2$ is unknown but constant).
+4. **Independence** — $\varepsilon_i$ and $\varepsilon_j$ are independent for $i \neq j$.
+5. **No measurement error in $x$** — We observe $x_i$ perfectly.
+
+Additionally, for hypothesis tests and confidence intervals, we add:
+
+6. **Normality** — $\varepsilon_i \sim \mathcal{N}(0, \sigma^2)$ (errors follow a Normal distribution).
+
+### 3.2 — The Gauss-Markov Theorem (Why OLS Is Optimal)
+
+**Theorem:** Under assumptions 1–4 above, the OLS estimators $\hat{\beta}_0$ and $\hat{\beta}_1$ are **BLUE** — the Best Linear Unbiased Estimators. "Best" means they have the smallest variance among all estimators that are linear in $y$ and unbiased.
+
+**Unbiasedness proof for $\hat{\beta}_1$:**
+
+Write $\hat{\beta}_1 = \sum w_i y_i$ where $w_i = \frac{x_i - \bar{x}}{S_{xx}}$ — it is a linear combination of the $y_i$'s.
+
+Substitute $y_i = \beta_0 + \beta_1 x_i + \varepsilon_i$:
+
+$$\mathbb{E}[\hat{\beta}_1] = \sum w_i \mathbb{E}[y_i] = \sum w_i(\beta_0 + \beta_1 x_i)$$
+
+$$= \beta_0 \underbrace{\sum w_i}_{=0} + \beta_1 \underbrace{\sum w_i x_i}_{=1} = \beta_1 \quad \checkmark$$
+
+(The two underbraced facts: $\sum w_i = \frac{\sum(x_i-\bar{x})}{S_{xx}} = 0$ and $\sum w_i x_i = \frac{S_{xx}}{S_{xx}} = 1$.)
+
+**Variance of $\hat{\beta}_1$:**
+
+Since the $y_i$'s are independent and each has variance $\sigma^2$:
+
+$$\mathrm{Var}(\hat{\beta}_1) = \sum w_i^2 \cdot \sigma^2 = \frac{\sigma^2}{S_{xx}} \tag{21}$$
+
+**Interpretation:** The more spread-out the $x$ values are (large $S_{xx}$), the smaller the variance of our slope estimate. If all $x$'s are the same, we cannot fit a slope at all — $S_{xx} = 0$ and the formula breaks.
+
+### 3.3 — The Hessian and Why the OLS Solution Is a Minimum
+
+> 📌 **What is a Hessian?** When you have a function of two variables (like $\mathrm{RSS}(\beta_0, \beta_1)$), the Hessian is a $2 \times 2$ table of all second derivatives. Just like a single second derivative tells you if a curve is concave up (a minimum) or concave down (a maximum), the Hessian tells you the same thing for a multi-variable surface. If the Hessian is "positive definite" (all eigenvalues positive), you are at a minimum.
+
+The Hessian of $\mathrm{RSS}(\beta_0, \beta_1)$ is:
+
+$$H = 2\begin{pmatrix} n & \sum x_i \\ \sum x_i & \sum x_i^2 \end{pmatrix}$$
+
+The determinant is $4(n\sum x_i^2 - (\sum x_i)^2) = 4n^2 \cdot \mathrm{Var}(x)$, which is positive whenever $x$ has any variation. So our critical point is guaranteed to be a global minimum — not a maximum or saddle point.
+
+This is also why RSS being a **convex function** (bowl-shaped) is important: convex functions have exactly one minimum.
+
+### 3.4 — Estimating the Error Variance $\sigma^2$
+
+The true error variance $\sigma^2$ is unknown. We estimate it from the residuals:
+
+$$\hat{\sigma}^2 = \frac{\mathrm{RSS}}{n-2} \tag{22}$$
+
+*Why divide by $n-2$ instead of $n$?* We estimated 2 parameters ($\hat{\beta}_0$ and $\hat{\beta}_1$) from the data. This "uses up" 2 degrees of freedom. The residuals are constrained — they must satisfy $\sum e_i = 0$ and $\sum x_i e_i = 0$ — so only $n-2$ of them are truly free. Dividing by $n-2$ makes $\hat{\sigma}^2$ an **unbiased estimator**: $\mathbb{E}[\hat{\sigma}^2] = \sigma^2$.
+
+### 3.5 — Confidence Intervals and Hypothesis Tests
+
+Under the normality assumption, the standardised estimates follow a $t$-distribution with $n-2$ degrees of freedom.
+
+A **95% confidence interval** for $\beta_1$:
+
+$$\hat{\beta}_1 \pm t_{n-2,\, 0.025} \cdot \mathrm{SE}(\hat{\beta}_1), \quad \text{where } \mathrm{SE}(\hat{\beta}_1) = \sqrt{\frac{\hat{\sigma}^2}{S_{xx}}} \tag{23}$$
+
+The **hypothesis test** for whether $x$ is useful at all: $H_0: \beta_1 = 0$ (no relationship). The test statistic is:
+
+$$t = \frac{\hat{\beta}_1}{\mathrm{SE}(\hat{\beta}_1)} \tag{24}$$
+
+If $|t|$ is large (say, beyond $\pm 2$ for $n \geq 30$), we reject $H_0$ and conclude the relationship is statistically significant.
+
+### 3.6 — Prediction Interval vs. Confidence Interval
+
+There are two different intervals for a new $x_\text{new}$:
+
+**Confidence interval for the mean** — how uncertain are we about the true average response at $x_\text{new}$?
+
+$$\hat{y}_\text{new} \pm t_{n-2} \cdot \hat{\sigma}\sqrt{\frac{1}{n} + \frac{(x_\text{new} - \bar{x})^2}{S_{xx}}} \tag{25}$$
+
+**Prediction interval for a new individual** — how uncertain are we about where one new actual data point will land?
+
+$$\hat{y}_\text{new} \pm t_{n-2} \cdot \hat{\sigma}\sqrt{1 + \frac{1}{n} + \frac{(x_\text{new} - \bar{x})^2}{S_{xx}}} \tag{26}$$
+
+The only difference is the $+1$ inside the square root. That $+1$ represents the **irreducible noise** of the new observation itself ($\varepsilon_\text{new}$). No matter how much data you collect, the prediction interval never shrinks to zero — there is always inherent randomness in a new individual outcome.
+
+### 3.7 — What Breaks When Assumptions Are Violated
+
+| Assumption Violated | What Breaks |
+|---|---|
+| Linearity | The line is the wrong shape; residual plots show curves |
+| Zero mean ($\mathbb{E}[\varepsilon] \neq 0$) | $\hat{\beta}_0$ is biased |
+| Heteroscedasticity (unequal variance) | OLS is no longer BLUE; standard errors are wrong |
+| Correlated errors | Standard errors underestimated; tests give false positives |
+| $x$ correlated with $\varepsilon$ (endogeneity) | $\hat{\beta}_1$ is biased AND inconsistent — the most serious violation |
+
+### 3.8 — Connection to Maximum Likelihood Estimation
+
+Under the normality assumption, OLS and **Maximum Likelihood Estimation (MLE)** give the same answer for $\hat{\beta}_0$ and $\hat{\beta}_1$.
+
+Why? Under Normality, $y_i \sim \mathcal{N}(\beta_0 + \beta_1 x_i, \sigma^2)$. The likelihood function for all $n$ observations is:
+
+$$L(\beta_0, \beta_1, \sigma^2) = \prod_{i=1}^{n} \frac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left(-\frac{(y_i - \beta_0 - \beta_1 x_i)^2}{2\sigma^2}\right)$$
+
+Maximising $L$ (or equivalently its log) with respect to $\beta_0, \beta_1$ is equivalent to minimising $\sum(y_i - \beta_0 - \beta_1 x_i)^2$ — which is exactly OLS. So **OLS = MLE when errors are Normal**. This is a deep connection: our least-squares choice is not arbitrary; it is the statistically optimal choice given Gaussian noise.
+
+---
+
+## 4. Code From Scratch (NumPy only)
 
 ```python
 import numpy as np
 
-# ============================================================
-# SIMPLE LINEAR REGRESSION — FROM SCRATCH
-# Every line commented with WHY, not just what.
-# Variable names match the math notation in this document.
-# ============================================================
+# ═══════════════════════════════════════════════════════════
+# SIMPLE LINEAR REGRESSION — FROM SCRATCH (NumPy only)
+# Variable names match the math notation used in this document
+# ═══════════════════════════════════════════════════════════
 
-np.random.seed(42)  # Fix random seed so results are reproducible
+# ── DATA ────────────────────────────────────────────────────
+# Using the same five-student dataset from Layer 1
+# x = hours studied, y = exam score
+x = np.array([1, 2, 3, 4, 5], dtype=float)  # predictor variable (xᵢ)
+y = np.array([40, 50, 55, 65, 70], dtype=float)  # response variable (yᵢ)
 
-# ---- STEP 0: Generate synthetic data ----
-# True parameters (β₀ and β₁) that we'll try to recover
-beta_0_true = 3.0   # True intercept
-beta_1_true = 2.5   # True slope
-sigma_true = 2.0    # True error std deviation
+n = len(x)  # number of observations — needed in several formulas
 
-n = 100  # Number of observations
+print("=" * 55)
+print("RAW DATA")
+print("=" * 55)
+for i in range(n):
+    print(f"  Student {i+1}: x={x[i]:.0f} hours, y={y[i]:.0f} points")
 
-# x values: the "inputs" or "features"
-x = np.linspace(0, 10, n)  # 100 evenly spaced points from 0 to 10
+# ── STEP 1: COMPUTE MEANS ────────────────────────────────────
+# x̄ = (1/n) Σ xᵢ   — the centre of all x values
+# ȳ = (1/n) Σ yᵢ   — the centre of all y values
+x_bar = np.mean(x)  # x̄
+y_bar = np.mean(y)  # ȳ
 
-# Generate errors: εᵢ ~ N(0, σ²)
-# This is the noise that makes real data imperfect
-epsilon = np.random.normal(loc=0, scale=sigma_true, size=n)
+print(f"\n{'='*55}")
+print("STEP 1 — Sample Means")
+print(f"{'='*55}")
+print(f"  x̄  = {x_bar:.4f}")
+print(f"  ȳ  = {y_bar:.4f}")
 
-# Generate y according to the true linear model: yᵢ = β₀ + β₁xᵢ + εᵢ
-y = beta_0_true + beta_1_true * x + epsilon
+# ── STEP 2: COMPUTE Sxx AND Sxy ──────────────────────────────
+# These are the building blocks of the slope formula (eq. 14)
+# S_xx = Σ(xᵢ - x̄)²        — how spread out are the x values?
+# S_xy = Σ(xᵢ - x̄)(yᵢ - ȳ) — do x and y move together?
 
-print("=" * 60)
-print("DATA SUMMARY")
-print("=" * 60)
-print(f"Number of observations: n = {n}")
-print(f"True β₀ = {beta_0_true}, True β₁ = {beta_1_true}")
-print(f"First 5 observations (x, y):")
-for i in range(5):
-    print(f"  x_{i+1} = {x[i]:.3f}, y_{i+1} = {y[i]:.3f}")
+x_dev = x - x_bar    # (xᵢ - x̄) for each i — deviation of x from mean
+y_dev = y - y_bar    # (yᵢ - ȳ) for each i — deviation of y from mean
 
+S_xx = np.sum(x_dev ** 2)          # denominator of β̂₁
+S_xy = np.sum(x_dev * y_dev)       # numerator of β̂₁
+S_yy = np.sum(y_dev ** 2)          # = TSS — needed for R²
 
-# ---- STEP 1: Compute sample means ----
-# x̄ = (1/n) Σ xᵢ  — the "center" of x values
-# ȳ = (1/n) Σ yᵢ  — the "center" of y values
-x_bar = np.mean(x)  # = (1/n) * Σxᵢ
-y_bar = np.mean(y)  # = (1/n) * Σyᵢ
+print(f"\n{'='*55}")
+print("STEP 2 — Intermediate Sums")
+print(f"{'='*55}")
+print(f"  Deviations (xᵢ - x̄):  {x_dev}")
+print(f"  Deviations (yᵢ - ȳ):  {y_dev}")
+print(f"  S_xx = Σ(xᵢ-x̄)²         = {S_xx:.4f}")
+print(f"  S_xy = Σ(xᵢ-x̄)(yᵢ-ȳ)    = {S_xy:.4f}")
+print(f"  S_yy = Σ(yᵢ-ȳ)² (= TSS)  = {S_yy:.4f}")
 
-print("\n" + "=" * 60)
-print("STEP 1: Sample Means")
-print("=" * 60)
-print(f"x̄ = {x_bar:.4f}")
-print(f"ȳ = {y_bar:.4f}")
+# ── STEP 3: COMPUTE β̂₁ AND β̂₀ ───────────────────────────────
+# β̂₁ = S_xy / S_xx  (equation 14 in the notes)
+# β̂₀ = ȳ - β̂₁ · x̄  (equation 6 in the notes)
 
+beta_1_hat = S_xy / S_xx   # slope estimate
+beta_0_hat = y_bar - beta_1_hat * x_bar  # intercept estimate
 
-# ---- STEP 2: Compute deviations from mean ----
-# (xᵢ - x̄): how far each xᵢ is from the center of x
-# (yᵢ - ȳ): how far each yᵢ is from the center of y
-# These are the building blocks of covariance and variance
-x_dev = x - x_bar  # shape (n,) — array of (xᵢ - x̄) for all i
-y_dev = y - y_bar  # shape (n,) — array of (yᵢ - ȳ) for all i
+print(f"\n{'='*55}")
+print("STEP 3 — OLS Coefficient Estimates")
+print(f"{'='*55}")
+print(f"  β̂₁ (slope)     = S_xy / S_xx = {S_xy} / {S_xx} = {beta_1_hat:.4f}")
+print(f"  β̂₀ (intercept) = ȳ - β̂₁·x̄ = {y_bar} - {beta_1_hat:.4f}·{x_bar} = {beta_0_hat:.4f}")
+print(f"\n  Fitted line: ŷ = {beta_0_hat:.2f} + {beta_1_hat:.2f}·x")
 
-print("\n" + "=" * 60)
-print("STEP 2: Deviations from Mean (first 5)")
-print("=" * 60)
-for i in range(5):
-    print(f"  x_{i+1} - x̄ = {x_dev[i]:.4f}, y_{i+1} - ȳ = {y_dev[i]:.4f}")
+# ── STEP 4: COMPUTE FITTED VALUES AND RESIDUALS ───────────────
+# ŷᵢ = β̂₀ + β̂₁·xᵢ  — what the line predicts for each point
+# eᵢ = yᵢ - ŷᵢ      — residual: how far the actual point is from the line
 
+y_hat = beta_0_hat + beta_1_hat * x   # fitted values (ŷᵢ)
+e     = y - y_hat                      # residuals (eᵢ)
 
-# ---- STEP 3: Compute S_xx and S_xy ----
-# S_xx = Σ(xᵢ - x̄)² — unnormalized sample variance of x
-# This is the denominator of β̂₁.
-# Measures how spread out the x values are.
-S_xx = np.sum(x_dev ** 2)
+print(f"\n{'='*55}")
+print("STEP 4 — Fitted Values and Residuals")
+print(f"{'='*55}")
+print(f"  {'i':>3} | {'xᵢ':>5} | {'yᵢ':>6} | {'ŷᵢ':>8} | {'eᵢ = yᵢ-ŷᵢ':>12}")
+print(f"  {'-'*45}")
+for i in range(n):
+    print(f"  {i+1:>3} | {x[i]:>5.1f} | {y[i]:>6.1f} | {y_hat[i]:>8.2f} | {e[i]:>+12.2f}")
 
-# S_xy = Σ(xᵢ - x̄)(yᵢ - ȳ) — unnormalized sample covariance
-# This is the numerator of β̂₁.
-# Measures how x and y co-vary around their respective means.
-S_xy = np.sum(x_dev * y_dev)
+# Verify the two key properties of OLS residuals (from normal equations):
+# 1) Σeᵢ = 0     (residuals sum to zero)
+# 2) Σxᵢeᵢ = 0  (residuals are uncorrelated with x)
+print(f"\n  Check: Σeᵢ   = {np.sum(e):.10f}  (should be ≈ 0)")
+print(f"  Check: Σxᵢeᵢ = {np.sum(x*e):.10f}  (should be ≈ 0)")
 
-# S_yy = Σ(yᵢ - ȳ)² — unnormalized sample variance of y
-# Needed for R² and correlation coefficient.
-S_yy = np.sum(y_dev ** 2)
+# ── STEP 5: COMPUTE RSS, TSS, ESS, AND R² ────────────────────
+# RSS = Σeᵢ²          — unexplained variation
+# TSS = S_yy          — total variation in y (already computed above)
+# ESS = TSS - RSS     — variation explained by the line
+# R²  = 1 - RSS/TSS  — fraction of variation explained
 
-print("\n" + "=" * 60)
-print("STEP 3: Key Sums")
-print("=" * 60)
-print(f"S_xx = Σ(xᵢ - x̄)² = {S_xx:.4f}")
-print(f"S_xy = Σ(xᵢ - x̄)(yᵢ - ȳ) = {S_xy:.4f}")
-print(f"S_yy = Σ(yᵢ - ȳ)² = {S_yy:.4f}")
+RSS = np.sum(e ** 2)                    # Residual Sum of Squares
+TSS = S_yy                              # Total Sum of Squares (= Σ(yᵢ-ȳ)²)
+ESS = np.sum((y_hat - y_bar) ** 2)     # Explained Sum of Squares
 
+R_squared = 1 - RSS / TSS              # coefficient of determination
 
-# ---- STEP 4: Compute OLS estimates ----
-# β̂₁ = S_xy / S_xx  (equation 18 in our derivation)
-# This is the slope: for every 1-unit increase in x, y increases by β̂₁
-beta_1_hat = S_xy / S_xx
+print(f"\n{'='*55}")
+print("STEP 5 — Variance Decomposition and R²")
+print(f"{'='*55}")
+print(f"  RSS = Σeᵢ²           = {RSS:.4f}")
+print(f"  TSS = Σ(yᵢ-ȳ)²      = {TSS:.4f}")
+print(f"  ESS = Σ(ŷᵢ-ȳ)²      = {ESS:.4f}")
+print(f"  ESS + RSS            = {ESS + RSS:.4f}  (should equal TSS = {TSS:.4f})")
+print(f"\n  R² = 1 - RSS/TSS = 1 - {RSS:.2f}/{TSS:.2f} = {R_squared:.6f}")
+print(f"  → The line explains {R_squared*100:.1f}% of the variance in y")
 
-# β̂₀ = ȳ - β̂₁ * x̄  (equation 19 in our derivation)
-# This ensures the line passes through the point (x̄, ȳ)
-beta_0_hat = y_bar - beta_1_hat * x_bar
+# ── STEP 6: VERIFY R² = r² ───────────────────────────────────
+# Pearson correlation: r = S_xy / sqrt(S_xx · S_yy)
+# In simple regression R² must equal r²  (equation 19 in the notes)
 
-print("\n" + "=" * 60)
-print("STEP 4: OLS Coefficient Estimates")
-print("=" * 60)
-print(f"β̂₁ = S_xy / S_xx = {S_xy:.4f} / {S_xx:.4f} = {beta_1_hat:.6f}")
-print(f"  True β₁ = {beta_1_true} — difference = {abs(beta_1_hat - beta_1_true):.6f}")
-print(f"β̂₀ = ȳ - β̂₁·x̄ = {y_bar:.4f} - {beta_1_hat:.4f}·{x_bar:.4f} = {beta_0_hat:.6f}")
-print(f"  True β₀ = {beta_0_true} — difference = {abs(beta_0_hat - beta_0_true):.6f}")
+r = S_xy / np.sqrt(S_xx * S_yy)  # Pearson correlation coefficient
 
+print(f"\n{'='*55}")
+print("STEP 6 — Correlation Check (R² = r²)")
+print(f"{'='*55}")
+print(f"  r       = S_xy / √(S_xx·S_yy) = {r:.6f}")
+print(f"  r²      = {r**2:.6f}")
+print(f"  R²      = {R_squared:.6f}   (should equal r²)")
 
-# ---- STEP 5: Compute fitted values ----
-# ŷᵢ = β̂₀ + β̂₁·xᵢ — the model's prediction for each observation
-# This is what the LINE says y should be at each x value
-y_hat = beta_0_hat + beta_1_hat * x  # shape (n,)
+# ── STEP 7: MAKE A PREDICTION ────────────────────────────────
+# Given a new x, predict y using the fitted line
 
-print("\n" + "=" * 60)
-print("STEP 5: Fitted Values (first 5)")
-print("=" * 60)
-for i in range(5):
-    print(f"  ŷ_{i+1} = {beta_0_hat:.4f} + {beta_1_hat:.4f} × {x[i]:.4f} = {y_hat[i]:.4f}")
-    print(f"         (actual y_{i+1} = {y[i]:.4f})")
+x_new = 6.0  # new student studied 6 hours
+y_pred = beta_0_hat + beta_1_hat * x_new  # predicted score
 
+print(f"\n{'='*55}")
+print("STEP 7 — Prediction")
+print(f"{'='*55}")
+print(f"  New input: x_new = {x_new} hours")
+print(f"  Prediction: ŷ = {beta_0_hat:.2f} + {beta_1_hat:.2f} × {x_new} = {y_pred:.2f} points")
 
-# ---- STEP 6: Compute residuals ----
-# eᵢ = yᵢ - ŷᵢ — the unexplained part of each observation
-# These should: (1) sum to zero, (2) be uncorrelated with x
-e = y - y_hat  # shape (n,)
+# ── LAYER 3: ERROR VARIANCE ESTIMATE ─────────────────────────
+# σ̂² = RSS / (n-2)  — unbiased estimate of true error variance
+# We divide by n-2 (not n) because 2 parameters were estimated
 
-print("\n" + "=" * 60)
-print("STEP 6: Residuals")
-print("=" * 60)
-print(f"Sum of residuals Σeᵢ = {np.sum(e):.10f}  (should be ≈ 0)")
-print(f"Sum of x·residuals Σxᵢeᵢ = {np.sum(x * e):.10f}  (should be ≈ 0)")
-# Both being ~0 confirms the normal equations were satisfied
+sigma_sq_hat = RSS / (n - 2)        # estimated error variance σ̂²
+sigma_hat    = np.sqrt(sigma_sq_hat) # estimated error std deviation σ̂
 
+SE_beta_1 = np.sqrt(sigma_sq_hat / S_xx)  # standard error of β̂₁  (eq. 23)
 
-# ---- STEP 7: Compute RSS, TSS, ESS, and R² ----
-# RSS (Residual Sum of Squares): variation the line did NOT explain
-RSS = np.sum(e ** 2)
-
-# TSS (Total Sum of Squares): total variation in y around its mean
-TSS = S_yy  # = Σ(yᵢ - ȳ)² — we already computed this above
-
-# ESS (Explained Sum of Squares): variation the line DID explain
-ESS = np.sum((y_hat - y_bar) ** 2)
-
-# Verify the decomposition: TSS = ESS + RSS
-print("\n" + "=" * 60)
-print("STEP 7: Variance Decomposition")
-print("=" * 60)
-print(f"RSS = Σeᵢ² = {RSS:.4f}")
-print(f"TSS = Σ(yᵢ - ȳ)² = {TSS:.4f}")
-print(f"ESS = Σ(ŷᵢ - ȳ)² = {ESS:.4f}")
-print(f"ESS + RSS = {ESS + RSS:.4f}  (should equal TSS = {TSS:.4f})")
-
-# R² = 1 - RSS/TSS — fraction of variance explained by the model
-R_squared = 1 - RSS / TSS
-print(f"\nR² = 1 - RSS/TSS = 1 - {RSS:.4f}/{TSS:.4f} = {R_squared:.6f}")
-
-
-# ---- STEP 8: Compute correlation and verify R² = r² ----
-# r = S_xy / sqrt(S_xx * S_yy) — sample correlation coefficient
-r = S_xy / np.sqrt(S_xx * S_yy)
-
-print("\n" + "=" * 60)
-print("STEP 8: Correlation Coefficient")
-print("=" * 60)
-print(f"r = S_xy / √(S_xx · S_yy) = {r:.6f}")
-print(f"r² = {r**2:.6f}")
-print(f"R² = {R_squared:.6f}  (should equal r² = {r**2:.6f})")
-
-
-# ---- STEP 9: Estimate error variance σ² ----
-# σ̂² = RSS / (n - 2) — we divide by n-2 (not n) because we estimated 2 parameters
-# This makes σ̂² an unbiased estimator of the true σ²
-sigma_sq_hat = RSS / (n - 2)  # Unbiased estimate of σ²
-sigma_hat = np.sqrt(sigma_sq_hat)  # Standard error of the regression
-
-print("\n" + "=" * 60)
-print("STEP 9: Error Variance Estimate")
-print("=" * 60)
-print(f"σ̂² = RSS/(n-2) = {RSS:.4f}/{n-2} = {sigma_sq_hat:.6f}")
-print(f"σ̂ = {sigma_hat:.6f}  (true σ = {sigma_true})")
-
-
-# ---- STEP 10: Compute standard errors of estimates ----
-# SE(β̂₁) = σ̂ / sqrt(S_xx) — uncertainty in slope estimate
-# SE(β̂₀) = σ̂ · sqrt(1/n + x̄²/S_xx) — uncertainty in intercept estimate
-SE_beta_1 = np.sqrt(sigma_sq_hat / S_xx)   # Standard error of β̂₁
-SE_beta_0 = np.sqrt(sigma_sq_hat * (1/n + x_bar**2 / S_xx))  # SE of β̂₀
-
-print("\n" + "=" * 60)
-print("STEP 10: Standard Errors of Coefficient Estimates")
-print("=" * 60)
-print(f"SE(β̂₁) = σ̂/√S_xx = {SE_beta_1:.6f}")
-print(f"SE(β̂₀) = σ̂·√(1/n + x̄²/S_xx) = {SE_beta_0:.6f}")
-
-# t-statistics: how many standard errors away from zero is our estimate?
-# Under H₀: βⱼ = 0, these follow a t-distribution with n-2 degrees of freedom
-t_beta_1 = beta_1_hat / SE_beta_1  # t-stat for slope
-t_beta_0 = beta_0_hat / SE_beta_0  # t-stat for intercept
-
-print(f"\nt-statistic for β̂₁: {t_beta_1:.4f}  (very large → slope is significantly nonzero)")
-print(f"t-statistic for β̂₀: {t_beta_0:.4f}")
-
-
-# ---- STEP 11: Make a prediction ----
-# Given a new x value, our best prediction of y
-x_new = 7.5  # A new x value we want to predict at
-y_pred = beta_0_hat + beta_1_hat * x_new  # The line gives us this directly
-
-# 95% prediction interval — where we expect a NEW observation to fall
-# PI = ŷ ± t_{n-2, 0.025} · σ̂ · √(1 + 1/n + (x_new - x̄)²/S_xx)
-# The "+1" under the square root accounts for the new observation's own noise
-from scipy import stats as scipy_stats  # Only using this for the t critical value
-t_crit = scipy_stats.t.ppf(0.975, df=n-2)  # ~1.984 for n=100
-
-# Margin of error: includes uncertainty from both estimation AND new observation's noise
-PI_margin = t_crit * sigma_hat * np.sqrt(1 + 1/n + (x_new - x_bar)**2 / S_xx)
-
-print("\n" + "=" * 60)
-print("STEP 11: Prediction")
-print("=" * 60)
-print(f"New x = {x_new}")
-print(f"Predicted ŷ = {beta_0_hat:.4f} + {beta_1_hat:.4f} × {x_new} = {y_pred:.4f}")
-print(f"True expected y = {beta_0_true + beta_1_true * x_new:.4f}")
-print(f"95% Prediction Interval: ({y_pred - PI_margin:.4f}, {y_pred + PI_margin:.4f})")
-
-
-# ---- FINAL SUMMARY ----
-print("\n" + "=" * 60)
-print("FINAL MODEL SUMMARY")
-print("=" * 60)
-print(f"Fitted model: ŷ = {beta_0_hat:.4f} + {beta_1_hat:.4f}·x")
-print(f"True model:   y  = {beta_0_true}    + {beta_1_true}·x + ε")
-print(f"R² = {R_squared:.4f}  ({R_squared*100:.2f}% of variance explained)")
-print(f"σ̂ = {sigma_hat:.4f}  (estimated noise level, true = {sigma_true})")
-print(f"n = {n} observations")
-```
-
-**Expected Output Highlights:**
-```
-β̂₁ ≈ 2.5xxx   (close to true β₁ = 2.5)
-β̂₀ ≈ 3.0xxx   (close to true β₀ = 3.0)
-Sum of residuals Σeᵢ = 0.0000000000  (exactly 0 up to floating point)
-R² = r²  (confirmed numerically)
-σ̂ ≈ 2.0  (close to true σ = 2.0)
+print(f"\n{'='*55}")
+print("LAYER 3 — Standard Error and Uncertainty")
+print(f"{'='*55}")
+print(f"  σ̂²          = RSS/(n-2) = {RSS:.4f}/{n-2} = {sigma_sq_hat:.4f}")
+print(f"  σ̂           = {sigma_hat:.4f}")
+print(f"  SE(β̂₁)      = σ̂/√S_xx  = {sigma_hat:.4f}/√{S_xx:.1f} = {SE_beta_1:.4f}")
+print(f"  t-statistic = β̂₁ / SE(β̂₁) = {beta_1_hat:.4f} / {SE_beta_1:.4f} = {beta_1_hat/SE_beta_1:.4f}")
 ```
 
 ---
 
-## 8. Interview Preparation Section
+## 5. Visual Explanation
 
-### 5 Conceptual Questions with Ideal Answers
+### 5.1 — What the Line Is Doing
+
+```
+Score (y)
+  70 |                               ●  (actual)
+     |                            ╱  ○  (predicted by line)
+  65 |                         ●╱
+     |                      ╱  ○
+  60 |                   ╱
+     |             ●  ╱  ○         ← residual = vertical gap
+  55 |          ╱
+     |       ●╱
+  50 |    ╱  ○
+     | ●╱
+  45 |╱  ○
+  40 |
+     └────────────────────────────── Hours (x)
+        1    2    3    4    5
+
+  ● = actual data point
+  ○ = predicted value (on the line)
+  The vertical gap between ● and ○ is the residual eᵢ
+```
+
+Each vertical gap is a residual. OLS makes the **sum of squared gaps as small as possible.**
+
+### 5.2 — The Key Geometric Fact
+
+```
+  y
+  │         ● ●                The OLS line always passes through (x̄, ȳ)
+  │       ●    ←── (x̄, ȳ)     No matter what the data looks like.
+  │     ●  ✦ ────────────────  This is guaranteed by equation (6):
+  │   ●    ╱                   β̂₀ = ȳ - β̂₁ · x̄
+  │       ╱
+  └──────────────────── x
+```
+
+The star ✦ marks $(\bar{x}, \bar{y})$. Every OLS line passes through this point — it pivots around the data's centre.
+
+### 5.3 — The Variance Decomposition
+
+```
+  For one data point:
+
+  yᵢ  ●
+      |  ← eᵢ = yᵢ - ŷᵢ    (residual — what the line missed)
+  ŷᵢ  ○
+      |  ← (ŷᵢ - ȳ)         (what the line explained)
+  ȳ   ──────────────────
+      ↑
+  Total gap = (yᵢ - ȳ) = explained + unexplained
+
+  TSS = ESS + RSS
+  (Total = Explained + Residual)
+```
+
+### 5.4 — Full Process Flow
+
+```mermaid
+flowchart TD
+    A["Collect data\n{(x₁,y₁), ..., (xₙ,yₙ)}"] --> B["Compute means\n x̄ and ȳ"]
+    B --> C["Compute\nS_xx = Σ(xᵢ-x̄)²\nS_xy = Σ(xᵢ-x̄)(yᵢ-ȳ)"]
+    C --> D["Estimate slope\nβ̂₁ = S_xy / S_xx"]
+    D --> E["Estimate intercept\nβ̂₀ = ȳ - β̂₁x̄"]
+    E --> F["Fitted line\nŷ = β̂₀ + β̂₁x"]
+    F --> G["Compute residuals\neᵢ = yᵢ - ŷᵢ"]
+    G --> H["Compute RSS, TSS"]
+    H --> I["R² = 1 - RSS/TSS\nHow good is the fit?"]
+    F --> J["Predict new y\nGiven new x"]
+```
+
+### 5.5 — Assumptions Check (What to Plot After Fitting)
+
+```mermaid
+flowchart LR
+    A[Fit the line] --> B[Plot residuals\nvs fitted values]
+    B --> C{Pattern in\nresiduals?}
+    C -->|No pattern,\nrandom scatter| D[✅ Linearity OK\n✅ Homoscedasticity OK]
+    C -->|Curved pattern| E[❌ True relationship\nis nonlinear]
+    C -->|Fan shape\nwidening| F[❌ Heteroscedasticity\nvariance not constant]
+    A --> G[Histogram of\nresiduals]
+    G --> H{Bell-shaped?}
+    H -->|Yes| I[✅ Normality OK\n for inference]
+    H -->|No| J[⚠️ t-tests may\nbe unreliable]
+```
 
 ---
 
-**Q1: Derive the OLS estimator for the slope $\hat{\beta}_1$ from scratch.**
+## 6. Interview Preparation
 
-**Ideal Answer:**
+### 5 Conceptual Questions
 
-Start from the loss function we want to minimize — the Residual Sum of Squares:
+---
 
-$$\text{RSS}(\beta_0, \beta_1) = \sum_{i=1}^{n} (y_i - \beta_0 - \beta_1 x_i)^2$$
+**Q1: Explain simple linear regression to someone who has never heard of it.**
 
-Take the partial derivative with respect to $\beta_0$ and set to zero:
+**Ideal answer:** Simple linear regression is a method for finding the best straight line to describe the relationship between two numerical variables. You have an input variable $x$ and an output variable $y$, and you want to predict $y$ from $x$.
 
-$$\frac{\partial \text{RSS}}{\partial \beta_0} = -2\sum_{i=1}^n (y_i - \beta_0 - \beta_1 x_i) = 0 \implies \hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$$
+"Best" is defined precisely: we minimise the sum of squared vertical distances from each data point to the line. This is called Ordinary Least Squares (OLS). The result is two numbers — a slope $\hat{\beta}_1$ and an intercept $\hat{\beta}_0$ — that define the line $\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x$.
 
-Take the partial derivative with respect to $\beta_1$ and set to zero:
+The slope tells you: "for every 1-unit increase in $x$, the prediction increases by $\hat{\beta}_1$." The intercept is the prediction when $x = 0$. We measure fit using $R^2$, which is the fraction of variation in $y$ explained by the line.
 
-$$\frac{\partial \text{RSS}}{\partial \beta_1} = -2\sum_{i=1}^n x_i(y_i - \beta_0 - \beta_1 x_i) = 0$$
+---
 
-Substitute the expression for $\hat{\beta}_0$:
+**Q2: Derive the OLS estimator for the slope from scratch.**
 
-$$\sum x_i y_i - n\bar{x}\bar{y} = \hat{\beta}_1(\sum x_i^2 - n\bar{x}^2)$$
+**Ideal answer:** We minimise $\mathrm{RSS} = \sum_{i=1}^n (y_i - \beta_0 - \beta_1 x_i)^2$.
+
+Take $\frac{\partial \mathrm{RSS}}{\partial \beta_0} = 0$ → this gives $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$ (the line passes through $(\bar{x}, \bar{y})$).
+
+Take $\frac{\partial \mathrm{RSS}}{\partial \beta_1} = 0$ and substitute $\hat{\beta}_0$ → after simplification:
 
 $$\hat{\beta}_1 = \frac{\sum(x_i - \bar{x})(y_i - \bar{y})}{\sum(x_i - \bar{x})^2} = \frac{S_{xy}}{S_{xx}}$$
 
-This is a minimum because the Hessian is positive definite (RSS is strictly convex when $x$ has nonzero variance).
+The numerator is the covariance of $x$ and $y$; the denominator is the variance of $x$. The slope is how much $y$ co-moves with $x$, normalised by how much $x$ varies on its own.
 
 ---
 
-**Q2: What are the Gauss-Markov assumptions, and what does the Gauss-Markov theorem tell us?**
+**Q3: What does $R^2$ measure, and what are its limitations?**
 
-**Ideal Answer:**
+**Ideal answer:** $R^2 = 1 - \mathrm{RSS}/\mathrm{TSS}$ measures the fraction of total variance in $y$ explained by the linear model. It ranges from 0 (model no better than predicting the mean) to 1 (perfect fit).
 
-The Gauss-Markov assumptions are: (1) the model is correctly specified as linear; (2) the error terms have zero conditional mean, $\mathbb{E}[\varepsilon_i | x_i] = 0$; (3) errors are homoscedastic, $\text{Var}(\varepsilon_i) = \sigma^2$; (4) errors are uncorrelated, $\text{Cov}(\varepsilon_i, \varepsilon_j) = 0$ for $i \neq j$.
-
-Under these assumptions, the Gauss-Markov Theorem states that the OLS estimator is **BLUE** — the Best Linear Unbiased Estimator. "Best" means minimum variance; "linear" means it's a linear function of the $y_i$s; "unbiased" means $\mathbb{E}[\hat{\beta}_j] = \beta_j$.
-
-Critically, Gauss-Markov does **not** require Normality of errors. You don't need the Normal distribution assumption for the point estimates to be optimal — you only need Normality for inference (confidence intervals, hypothesis tests) using the t- and F-distributions.
-
----
-
-**Q3: What is $R^2$, and why is it equal to $r^2$ in simple linear regression?**
-
-**Ideal Answer:**
-
-$R^2 = 1 - \text{RSS}/\text{TSS}$ measures the fraction of total variance in $y$ explained by the linear model. It ranges from 0 (the model does no better than predicting $\bar{y}$ for everyone) to 1 (perfect fit, no residuals).
-
-In simple linear regression:
-
-$$R^2 = \frac{\text{ESS}}{\text{TSS}} = \frac{\hat{\beta}_1^2 S_{xx}}{S_{yy}} = \frac{\left(\frac{S_{xy}}{S_{xx}}\right)^2 S_{xx}}{S_{yy}} = \frac{S_{xy}^2}{S_{xx} \cdot S_{yy}} = r^2$$
-
-where $r = S_{xy}/\sqrt{S_{xx} S_{yy}}$ is the sample correlation. So $R^2$ is literally the squared correlation between $x$ and $y$. This is unique to the simple (one-predictor) case. In multiple regression, $R^2$ is the squared correlation between $y$ and $\hat{y}$, not between $y$ and any single predictor.
+Limitations:
+- **High $R^2$ does not mean the model is correct.** You can get $R^2 = 0.99$ with a badly misspecified model if the signal is strong.
+- **$R^2$ cannot decrease when you add variables.** In multiple regression, $R^2$ always goes up when you add a predictor — even a random one. That is why adjusted $R^2$ exists.
+- **It says nothing about causation.** $R^2 = 0.95$ does not mean $x$ causes $y$.
+- **It does not tell you whether predictions are useful** in an absolute sense — a model explaining 70% of variance in stock prices might still be useless for trading.
 
 ---
 
-**Q4: Explain the bias-variance tradeoff in the context of OLS regression.**
+**Q4: What assumptions does OLS make, and what happens when they break?**
 
-**Ideal Answer:**
+**Ideal answer:** The Gauss-Markov assumptions are: linearity, zero-mean errors, homoscedasticity (constant error variance), and independent errors.
 
-The OLS estimator $\hat{\beta}_1$ is unbiased: $\mathbb{E}[\hat{\beta}_1] = \beta_1$. Its variance is $\text{Var}(\hat{\beta}_1) = \sigma^2/S_{xx}$.
+If **linearity** breaks: the line is the wrong shape, residuals show a curved pattern. Solution: transform variables or use polynomial regression.
 
-The bias-variance tradeoff becomes relevant when we consider alternatives to OLS:
+If **homoscedasticity** breaks: standard errors are wrong, so confidence intervals and hypothesis tests are unreliable. OLS is no longer the most efficient estimator. Solution: use heteroscedasticity-robust standard errors or Weighted Least Squares.
 
-- **Ridge regression** shrinks the estimates toward zero: $\hat{\beta}_1^{\text{ridge}}$ is biased (it underestimates $|\beta_1|$), but has lower variance than OLS.
-- **No model at all** (always predict $\bar{y}$): high bias (nonzero if $\beta_1 \neq 0$), zero variance.
+If **errors are correlated** (common in time series): standard errors are underestimated, giving false confidence. Solution: use methods that model the error structure (e.g. ARIMA, GLS).
 
-In terms of Mean Squared Error: $\text{MSE} = \text{Bias}^2 + \text{Variance}$. OLS minimizes variance among unbiased estimators (Gauss-Markov), but a slightly biased estimator might have lower MSE if it reduces variance enough. This is the fundamental tradeoff: accepting some bias to get lower variance, especially when $n$ is small relative to the number of parameters.
-
----
-
-**Q5: If I want to predict $y$ for a new $x_\text{new}$, what is the prediction interval, and why is it wider than the confidence interval for the mean?**
-
-**Ideal Answer:**
-
-A **confidence interval for the mean response** at $x_\text{new}$ is:
-
-$$\hat{y}_{\text{new}} \pm t_{n-2, \alpha/2} \cdot \hat{\sigma} \sqrt{\frac{1}{n} + \frac{(x_{\text{new}} - \bar{x})^2}{S_{xx}}}$$
-
-A **prediction interval for a new observation** is:
-
-$$\hat{y}_{\text{new}} \pm t_{n-2, \alpha/2} \cdot \hat{\sigma} \sqrt{1 + \frac{1}{n} + \frac{(x_{\text{new}} - \bar{x})^2}{S_{xx}}}$$
-
-The "+1" inside the square root is the key difference. The CI for the mean only accounts for **uncertainty in estimating** $\beta_0 + \beta_1 x_\text{new}$ (parameter estimation uncertainty). The PI also accounts for the **irreducible noise** of the new observation itself ($\varepsilon_\text{new}$, which has variance $\sigma^2$).
-
-No matter how much data we have ($n \to \infty$), the prediction interval never shrinks to zero — it converges to $\hat{y}_\text{new} \pm z_{\alpha/2} \sigma$, reflecting the irreducible noise. The CI for the mean does shrink to zero as $n \to \infty$.
-
-Both intervals are widest at $x_\text{new} = \bar{x}$ — wait, actually both are **narrowest** at $x_\text{new} = \bar{x}$ and widen as we extrapolate further from the center. This makes intuitive sense: our line is most precisely estimated at the center of the data.
+If **$x$ is correlated with $\varepsilon$** (endogeneity): $\hat{\beta}_1$ is biased even in large samples. This is the most serious violation. Solution: Instrumental Variables regression.
 
 ---
 
-### 3 Trick Questions
+**Q5: Why do we square the residuals instead of taking absolute values?**
+
+**Ideal answer:** Three reasons:
+
+First, squaring makes everything positive — positive and negative errors do not cancel.
+
+Second, squaring penalises large errors more heavily than small ones. A squared error of 100 (a miss of 10) is four times worse than 25 (a miss of 5). This is usually the right behaviour — being way off is disproportionately bad.
+
+Third, and most importantly: the square function is **differentiable everywhere**, including at zero. The absolute value function $|e|$ has a kink at zero — it is not differentiable there — making calculus-based optimisation messy. The squared loss has a clean, smooth gradient everywhere, which is why gradient descent works so well on it. This also extends to neural networks: squaring is the natural loss for regression in deep learning for the exact same reason.
 
 ---
 
-**Trick Q1: "If I swap $x$ and $y$ — regress $x$ on $y$ instead of $y$ on $x$ — do I get the same line?"**
-
-**Surprising Answer: NO.**
-
-Most people think "it's the same data, same relationship, so it must be the same line." But OLS minimizes *vertical* residuals (in the $y$ direction). When you swap, you're minimizing *horizontal* residuals (in the $x$ direction).
-
-Regression of $y$ on $x$: slope = $r \cdot \frac{s_y}{s_x}$
-
-Regression of $x$ on $y$: slope = $r \cdot \frac{s_x}{s_y}$, which when inverted gives slope in $y$-on-$x$ sense of $\frac{1}{r} \cdot \frac{s_y}{s_x}$
-
-Since $|r| \leq 1$, the second slope is always at least as steep as the first. The two lines coincide only when $r = \pm 1$ (perfect correlation). This is actually the origin of the term "regression to the mean" — Galton observed that regressing tall parents' heights onto children gave a slope less than 1, meaning children "regressed" toward average height.
+### 3 Trap Questions
 
 ---
 
-**Trick Q2: "If $R^2 = 0.95$, is the model definitely a good fit?"**
+**Trap Q1: "If I swap $x$ and $y$ — regress $y$ on $x$ — and then regress $x$ on $y$ — and invert that line — do I get the same line?"**
 
-**Surprising Answer: NO, and you might be completely fooled.**
+**Intuition says:** "Yes — it's the same relationship, just described both ways."
 
-Anscombe's Quartet (1973) is the canonical counterexample. Four completely different datasets all have nearly identical $R^2$, $\bar{x}$, $\bar{y}$, $\hat{\beta}_0$, $\hat{\beta}_1$, and $\hat{\sigma}^2$. But:
-- Dataset 1: A clean linear relationship — linear regression is appropriate.
-- Dataset 2: A perfect quadratic relationship — linear regression misses the curve entirely.
-- Dataset 3: A perfect linear relationship with one extreme outlier — the outlier is dragging the fit.
-- Dataset 4: All $x$ values are identical except one — the model is driven by a single leverage point.
+**The surprising truth:** NO. They give different lines.
 
-High $R^2$ is necessary but far from sufficient. Always plot your data and check residuals. A model can have high $R^2$ while being completely misspecified.
+Regressing $y$ on $x$ minimises **vertical** residuals. Regressing $x$ on $y$ minimises **horizontal** residuals. These are different geometric objects. The two lines coincide only when $r = \pm 1$ (perfect correlation). In general:
+
+- Slope of $y$-on-$x$: $r \cdot \frac{s_y}{s_x}$
+- Slope of $x$-on-$y$ (expressed as rise over run in the $y$ direction): $\frac{1}{r} \cdot \frac{s_y}{s_x}$
+
+Since $|r| \leq 1$, the second is always steeper. This is not a symmetry: OLS is inherently asymmetric. If you want a line that minimises perpendicular distances, you need Orthogonal Regression (Total Least Squares).
 
 ---
 
-**Trick Q3: "Adding more variables to a regression always increases $R^2$. Does that mean we should always add more predictors?"**
+**Trap Q2: "Adding a new predictor to a regression model always improves the model, right? $R^2$ went up."**
 
-**Surprising Answer: Absolutely not — this is the overfitting problem.**
+**Intuition says:** "More information is always better."
 
-$R^2$ is monotonically non-decreasing as you add predictors. In the extreme, if you have $n$ observations and $n$ parameters, you can fit the data perfectly with $R^2 = 1$, but the model is memorizing noise and will predict terribly on new data.
+**The surprising truth:** $R^2$ can only stay the same or increase when you add a variable — even a completely random, meaningless one. This is a mathematical fact, not a sign of improvement. Adding random noise predictors will inflate $R^2$ while making the model worse at predicting new data.
 
-The fix is to use **adjusted $R^2$**:
+The distinction is between **in-sample fit** (how well the line fits the data it was trained on) and **out-of-sample prediction** (how well it predicts new data). Adding variables always helps the former and can hurt the latter. This is called **overfitting**. The solution is adjusted $R^2$, cross-validation, or information criteria like AIC.
 
-$$R^2_{\text{adj}} = 1 - \frac{\text{RSS}/(n-p-1)}{\text{TSS}/(n-1)}$$
+---
 
-where $p$ is the number of predictors. This penalizes model complexity. Or better yet, use cross-validation or information criteria like AIC/BIC.
+**Trap Q3: "A student scored 95/100. They probably studied a lot and will score just as high next time, right?"**
 
-The core lesson: in-sample fit is not the same as out-of-sample predictive performance. Optimizing $R^2$ on training data leads to overfitting.
+**Intuition says:** "Yes, high performers consistently perform high."
+
+**The surprising truth:** This is the **regression to the mean** phenomenon. Extreme scores contain a component of luck. The student who scored 95 probably had both good skill *and* a good luck day (easy questions, feeling great, etc.). On the next test, the luck component is independent — so statistically, their score is expected to be closer to the population mean than 95.
+
+This is where the term "regression" originally came from. Galton (1886) found that children of very tall parents were on average tall, but not as tall as their parents — they "regressed to the mean." Linear regression gets its name from this observation.
 
 ---
 
 ### Common Mistakes Candidates Make
 
-1. **Confusing $\varepsilon_i$ (true error) with $e_i$ (residual).** The errors are unobservable quantities from the data-generating process; residuals are what we compute from the fitted model. The residuals have constraints ($\sum e_i = 0$, $\sum x_i e_i = 0$); the true errors don't.
+1. **Confusing $\varepsilon_i$ (true error) with $e_i$ (residual).** $\varepsilon_i$ is the unobservable true noise in the data-generating process. $e_i$ is what we compute from our fitted line. They are different — residuals have constraints ($\sum e_i = 0$, $\sum x_i e_i = 0$); true errors do not.
 
-2. **Saying "OLS is the MLE."** This is only true under the additional assumption of Normality of errors. Without Normality, OLS is motivated purely by the Gauss-Markov theorem (minimum variance among linear unbiased estimators), not by maximum likelihood. With Normality, MLE = OLS, but this is a special case.
+2. **Claiming "high $R^2$ means the model is correct."** $R^2$ only measures linear fit. The relationship could be nonlinear and $R^2$ could still be high. Always plot residuals.
 
-3. **Claiming $R^2$ is a test of whether the relationship is significant.** There's no hypothesis test involved in $R^2$ itself. The F-test tests significance. You can have a tiny but highly significant $\hat{\beta}_1$ (statistically significant but $R^2 \approx 0$), or a large but imprecisely estimated $\hat{\beta}_1$ (high $R^2$ but not significant in small samples).
+3. **Forgetting to define $\bar{x}$ and $\bar{y}$ in a whiteboard derivation.** Interviewers notice when symbols appear without definition.
 
-4. **Forgetting the difference between confidence intervals and prediction intervals.** CIs are for the true mean $\mathbb{E}[y | x]$; PIs are for a new individual observation $y_\text{new}$. PIs are always wider.
+4. **Confusing prediction intervals and confidence intervals.** The CI is for the *average* response; the PI is for an *individual* new observation. PI is always wider because it includes the irreducible noise $\varepsilon_\text{new}$.
 
-5. **Treating the model as causal without justification.** OLS gives a correlation-based fit. The slope $\hat{\beta}_1$ is a causal estimate only if all confounders are controlled for, which requires strong assumptions or randomized data.
+5. **Treating regression as causal.** OLS gives the best linear predictor. Whether $x$ *causes* $y$ requires additional assumptions or experimental design. Do not say "a one-unit increase in $x$ *causes* a $\hat{\beta}_1$ increase in $y$" — say "is *associated with*."
 
 ---
 
-## 9. Connections to Other Concepts
+## 7. Connections Map
 
-### Prerequisites (What You Must Know Before This)
+### What You Need Before This
 
 ```mermaid
 flowchart TD
-    A[Calculus:\nPartial Derivatives] --> SLR[Simple Linear Regression]
-    B[Linear Algebra:\nVectors, Projections] --> SLR
-    C[Basic Statistics:\nMean, Variance, Covariance] --> SLR
-    D[Probability:\nExpectation, Normal Distribution] --> SLR
-    E[Optimization:\nMinimizing a convex function] --> SLR
+    A["Basic algebra\n(solving equations)"] --> SLR
+    B["Summation notation\nΣ"] --> SLR
+    C["Mean / average"] --> SLR
+    D["Basic calculus\n(derivatives, setting = 0)\nNeeded only for Layer 2"] --> SLR
+    E["Probability basics\n(expected value, variance)\nNeeded only for Layer 3"] --> SLR
+    SLR["Simple\nLinear\nRegression"]
 ```
 
-### What This Unlocks (What Becomes Clear After)
+### What This Unlocks
 
 ```mermaid
 flowchart TD
-    SLR[Simple Linear Regression] --> A[Multiple Linear Regression]
-    SLR --> B[Regularization:\nRidge & Lasso]
-    SLR --> C[Logistic Regression\nvia generalized models]
-    SLR --> D[Gradient Descent\nas an iterative alternative to OLS]
-    SLR --> E[Bias-Variance Tradeoff]
-    SLR --> F[Neural Networks\nno hidden layer + linear activation = SLR]
-    SLR --> G[Hypothesis Testing:\nt-tests, F-tests]
-    SLR --> H[Time Series:\nAR models]
-    SLR --> I[Causal Inference:\nIV Regression, DiD]
-    SLR --> J[Kernel Regression\nnonparametric extension]
+    SLR["Simple Linear\nRegression"] --> A["Multiple Linear\nRegression\n(many predictors)"]
+    SLR --> B["Regularisation\n(Ridge, Lasso)\n= regression with penalty"]
+    SLR --> C["Logistic Regression\n= regression for classification"]
+    SLR --> D["Gradient Descent\n= iterative way to minimise loss"]
+    SLR --> E["Loss Functions\nin deep learning"]
+    SLR --> F["Bias-Variance\nTradeoff"]
+    SLR --> G["Hypothesis Testing\nt-tests, F-tests"]
+    SLR --> H["Neural Networks\n(no hidden layers = linear regression)"]
 ```
 
 ### Where This Appears in Real ML/AI Systems
 
-- **Feature importance in ML**: Linear regression coefficients are the simplest form of feature importance — they literally tell you the weight of each feature.
-- **Last layer of a neural network**: For regression tasks, the final layer is always a linear layer — it's doing linear regression on the learned representations.
-- **Linear probing**: A standard technique for evaluating pretrained representations (BERT, ResNets) — freeze the model, train a linear regression/classifier on top.
-- **RLHF (Reinforcement Learning from Human Feedback)**: The reward model can be understood as a generalized regression problem.
-- **Calibration**: Platt scaling (calibrating classifier outputs) is logistic regression, which is the generalization of linear regression.
-- **Principal Component Analysis + Regression**: PCA regression projects features onto principal components first, then runs linear regression — directly builds on OLS theory.
-- **Covariance estimation in Gaussian Processes**: The kernel/covariance structure in GP regression generalizes OLS in profound ways.
+- **Linear probing of pretrained models (BERT, ResNets):** Freeze the model, then train a linear regression/classifier on top of the embeddings. This tells you how much task-relevant information is linearly separable in the representations.
+- **Reward modelling in RLHF:** The reward model can be understood as a regression problem — predicting human preference scores from text embeddings.
+- **Feature importance:** Linear regression coefficients are the simplest measure of feature importance in any model.
+- **Calibration of classifier outputs:** Platt scaling (fitting a logistic regression to a classifier's raw outputs) is a direct extension of linear regression.
+- **Interpretability:** LIME (Local Interpretable Model-agnostic Explanations) fits a local linear regression around each prediction to explain what the model is doing.
 
 ---
 
-## 10. Quick Reference Cheat Sheet
+## 8. Quick Reference Cheat Sheet
 
 ```
-╔══════════════════════════════════════════════════════════════════╗
-║              SIMPLE LINEAR REGRESSION — CHEAT SHEET             ║
-╠══════════════════════════════════════════════════════════════════╣
-║ MODEL                                                            ║
-║   yᵢ = β₀ + β₁xᵢ + εᵢ,   εᵢ ~ N(0, σ²) i.i.d.               ║
-║                                                                  ║
-║ NOTATION                                                         ║
-║   x̄, ȳ  = sample means of x and y                             ║
-║   Sxx = Σ(xᵢ - x̄)²          [unnorm. variance of x]          ║
-║   Sxy = Σ(xᵢ - x̄)(yᵢ - ȳ)  [unnorm. covariance]             ║
-║   Syy = Σ(yᵢ - ȳ)²          [unnorm. variance of y]          ║
-║                                                                  ║
-║ OLS ESTIMATES                                                    ║
-║   β̂₁ = Sxy / Sxx            [slope]                           ║
-║   β̂₀ = ȳ - β̂₁x̄           [intercept, line thru (x̄,ȳ)]    ║
-║                                                                  ║
-║ FITTED VALUES & RESIDUALS                                        ║
-║   ŷᵢ = β̂₀ + β̂₁xᵢ         [prediction]                       ║
-║   eᵢ = yᵢ - ŷᵢ             [residual, NOT the same as εᵢ]    ║
-║   Σeᵢ = 0, Σxᵢeᵢ = 0      [from normal equations]            ║
-║                                                                  ║
-║ VARIANCE DECOMPOSITION                                           ║
-║   TSS = ESS + RSS           [total = explained + residual]     ║
-║   R² = 1 - RSS/TSS = r²     [fraction explained; r = corr]    ║
-║                                                                  ║
-║ ERROR VARIANCE ESTIMATE                                          ║
-║   σ̂² = RSS/(n-2)           [divide by n-2, not n]            ║
-║                                                                  ║
-║ STANDARD ERRORS                                                  ║
-║   SE(β̂₁) = σ̂/√Sxx                                           ║
-║   SE(β̂₀) = σ̂·√(1/n + x̄²/Sxx)                              ║
-║                                                                  ║
-║ KEY PROPERTIES                                                   ║
-║   • β̂₀, β̂₁ are BLUE (Gauss-Markov)                          ║
-║   • E[β̂₁] = β₁, Var(β̂₁) = σ²/Sxx                          ║
-║   • Wider spread in x → lower Var(β̂₁) → better estimates     ║
-║   • R² = r² in simple (one-predictor) regression only         ║
-║   • Line always passes through (x̄, ȳ)                        ║
-║   • Prediction interval > Confidence interval (always)         ║
-║                                                                  ║
-║ 3 THINGS THAT WILL COME UP IN AN INTERVIEW                      ║
-║   1. Derive β̂₁ from scratch (take ∂RSS/∂β₀, ∂RSS/∂β₁ = 0)  ║
-║   2. What does Gauss-Markov say? → OLS is BLUE                 ║
-║   3. Swap x and y — same line? NO! OLS is asymmetric          ║
-╚══════════════════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════╗
+║            SIMPLE LINEAR REGRESSION — CHEAT SHEET           ║
+╠══════════════════════════════════════════════════════════════╣
+║  THE MODEL                                                   ║
+║  yᵢ = β₀ + β₁xᵢ + εᵢ                                       ║
+║  ŷᵢ = β̂₀ + β̂₁xᵢ    (fitted line, no noise term)           ║
+║                                                              ║
+║  KEY NOTATION                                                ║
+║  x̄, ȳ   = sample means of x and y                         ║
+║  S_xx    = Σ(xᵢ-x̄)²          (variance of x, unnorm.)     ║
+║  S_xy    = Σ(xᵢ-x̄)(yᵢ-ȳ)    (covariance of x,y, unnorm.) ║
+║  S_yy    = Σ(yᵢ-ȳ)² = TSS   (variance of y, unnorm.)      ║
+║  eᵢ      = yᵢ - ŷᵢ           (residual for point i)        ║
+║                                                              ║
+║  OLS FORMULAS                                                ║
+║  β̂₁ = S_xy / S_xx    (slope)                               ║
+║  β̂₀ = ȳ - β̂₁·x̄    (intercept; line passes thru (x̄,ȳ))  ║
+║                                                              ║
+║  GOODNESS OF FIT                                             ║
+║  RSS = Σeᵢ²                 (unexplained variation)         ║
+║  TSS = Σ(yᵢ-ȳ)²            (total variation in y)         ║
+║  R²  = 1 - RSS/TSS          (fraction explained; 0 to 1)   ║
+║  R²  = r²  in simple regression  (r = Pearson correlation) ║
+║                                                              ║
+║  ERROR VARIANCE (Layer 3)                                    ║
+║  σ̂² = RSS/(n-2)  — divide by n-2, NOT n                    ║
+║                                                              ║
+║  KEY PROPERTIES                                              ║
+║  • Σeᵢ = 0   and   Σxᵢeᵢ = 0  (always, by construction)   ║
+║  • OLS line always passes through (x̄, ȳ)                   ║
+║  • OLS is BLUE under Gauss-Markov assumptions               ║
+║  • R² ∈ [0,1] for simple regression (can be < 0 otherwise) ║
+║  • Higher spread in x → lower variance in β̂₁ estimate      ║
+║                                                              ║
+║  3 THINGS THAT WILL COME UP IN AN INTERVIEW                 ║
+║  1. Derive β̂₁ from scratch (∂RSS/∂β₁ = 0, show algebra)   ║
+║  2. Regress y-on-x vs x-on-y: NOT the same line (why?)     ║
+║  3. R² always increases when adding variables — dangerous   ║
+╚══════════════════════════════════════════════════════════════╝
 ```
-
----
-
-*End of Notes — Simple Linear Regression*
-
-*Total coverage: model setup → OLS derivation → properties → geometric interpretation → code → interview prep → connections.*
