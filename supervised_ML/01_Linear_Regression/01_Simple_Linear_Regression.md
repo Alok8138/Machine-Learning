@@ -15,17 +15,17 @@ Simple Linear Regression finds the best straight line through a set of data poin
 Imagine you are trying to guess how many hours a student studied before an exam, and you want to predict their score. You collect data from 20 students:
 
 | Hours Studied | Exam Score |
-|---|---|
-| 1 | 45 |
-| 2 | 52 |
-| 3 | 61 |
-| 5 | 73 |
-| 8 | 89 |
-| ... | ... |
+| ------------- | ---------- |
+| 1             | 45         |
+| 2             | 52         |
+| 3             | 61         |
+| 5             | 73         |
+| 8             | 89         |
+| ...           | ...        |
 
 If you plot these on a piece of paper with "Hours" on the horizontal axis and "Score" on the vertical axis, the dots form a rough diagonal band going upward. You can clearly see: **more hours → higher score**.
 
-Now someone asks: *"A student studied for 6 hours. What score do you predict?"*
+Now someone asks: _"A student studied for 6 hours. What score do you predict?"_
 
 You could eyeball it — but eyeballing is imprecise and different people would draw different lines. We want a **single, agreed-upon, mathematically optimal line** that every person using this data would arrive at. That is exactly what Simple Linear Regression gives you.
 
@@ -65,7 +65,7 @@ Every symbol, defined right now:
 - $\beta_1$ — the **slope** (pronounced "beta-one"). This says: "for every 1 unit increase in $x$, the prediction increases by $\beta_1$ units."
 - $\varepsilon_i$ — the **error term** (pronounced "epsilon-i"). This is the part of $y_i$ that $x_i$ alone cannot explain — random noise, unmeasured factors, etc.
 
-**In plain English:** The model is saying — *"Each person's score ($y_i$) is approximately equal to a baseline ($\beta_0$) plus their study hours times some multiplier ($\beta_1 x_i$), with a little random noise added ($\varepsilon_i$)."*
+**In plain English:** The model is saying — _"Each person's score ($y_i$) is approximately equal to a baseline ($\beta_0$) plus their study hours times some multiplier ($\beta_1 x_i$), with a little random noise added ($\varepsilon_i$)."_
 
 We do not know the true $\beta_0$ and $\beta_1$. We **estimate** them from data. We call our estimates $\hat{\beta}_0$ and $\hat{\beta}_1$ (the hat symbol $\hat{}$ always means "estimated from data"). The estimated line is:
 
@@ -82,12 +82,12 @@ where $\hat{y}_i$ is our **predicted value** for observation $i$.
 Let's use a tiny concrete dataset throughout this entire layer. Small enough to calculate by hand:
 
 | Student $i$ | Hours $x_i$ | Score $y_i$ |
-|---|---|---|
-| 1 | 1 | 40 |
-| 2 | 2 | 50 |
-| 3 | 3 | 55 |
-| 4 | 4 | 65 |
-| 5 | 5 | 70 |
+| ----------- | ----------- | ----------- |
+| 1           | 1           | 40          |
+| 2           | 2           | 50          |
+| 3           | 3           | 55          |
+| 4           | 4           | 65          |
+| 5           | 5           | 70          |
 
 If you sketched this, you would see five dots forming an upward-sloping band. Clearly more hours relates to higher scores. We want to draw the **best straight line** through these five dots.
 
@@ -152,14 +152,14 @@ $$\bar{y} = \frac{40+50+55+65+70}{5} = \frac{280}{5} = 56$$
 
 For each student, compute $(x_i - \bar{x})$, $(y_i - \bar{y})$, their product, and $(x_i - \bar{x})^2$:
 
-| $i$ | $x_i$ | $y_i$ | $x_i - \bar{x}$ | $y_i - \bar{y}$ | $(x_i-\bar{x})(y_i-\bar{y})$ | $(x_i-\bar{x})^2$ |
-|---|---|---|---|---|---|---|
-| 1 | 1 | 40 | $1-3=-2$ | $40-56=-16$ | $(-2)(-16)=32$ | $(-2)^2=4$ |
-| 2 | 2 | 50 | $2-3=-1$ | $50-56=-6$ | $(-1)(-6)=6$ | $(-1)^2=1$ |
-| 3 | 3 | 55 | $3-3=0$ | $55-56=-1$ | $(0)(-1)=0$ | $0^2=0$ |
-| 4 | 4 | 65 | $4-3=1$ | $65-56=9$ | $(1)(9)=9$ | $1^2=1$ |
-| 5 | 5 | 70 | $5-3=2$ | $70-56=14$ | $(2)(14)=28$ | $2^2=4$ |
-| **Sum** | | | | | **75** | **10** |
+| $i$     | $x_i$ | $y_i$ | $x_i - \bar{x}$ | $y_i - \bar{y}$ | $(x_i-\bar{x})(y_i-\bar{y})$ | $(x_i-\bar{x})^2$ |
+| ------- | ----- | ----- | --------------- | --------------- | ---------------------------- | ----------------- |
+| 1       | 1     | 40    | $1-3=-2$        | $40-56=-16$     | $(-2)(-16)=32$               | $(-2)^2=4$        |
+| 2       | 2     | 50    | $2-3=-1$        | $50-56=-6$      | $(-1)(-6)=6$                 | $(-1)^2=1$        |
+| 3       | 3     | 55    | $3-3=0$         | $55-56=-1$      | $(0)(-1)=0$                  | $0^2=0$           |
+| 4       | 4     | 65    | $4-3=1$         | $65-56=9$       | $(1)(9)=9$                   | $1^2=1$           |
+| 5       | 5     | 70    | $5-3=2$         | $70-56=14$      | $(2)(14)=28$                 | $2^2=4$           |
+| **Sum** |       |       |                 |                 | **75**                       | **10**            |
 
 **Step 4c — Compute the slope:**
 
@@ -176,31 +176,31 @@ $$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \cdot \bar{x} = 56 - 7.5 \times 3 = 56
 **Step 4e — Make predictions and check residuals:**
 
 | $i$ | $x_i$ | $y_i$ | $\hat{y}_i = 33.5 + 7.5x_i$ | $e_i = y_i - \hat{y}_i$ |
-|---|---|---|---|---|
-| 1 | 1 | 40 | 41.0 | $-1.0$ |
-| 2 | 2 | 50 | 48.5 | $+1.5$ |
-| 3 | 3 | 55 | 56.0 | $-1.0$ |
-| 4 | 4 | 65 | 63.5 | $+1.5$ |
-| 5 | 5 | 70 | 71.0 | $-1.0$ |
+| --- | ----- | ----- | --------------------------- | ----------------------- |
+| 1   | 1     | 40    | 41.0                        | $-1.0$                  |
+| 2   | 2     | 50    | 48.5                        | $+1.5$                  |
+| 3   | 3     | 55    | 56.0                        | $-1.0$                  |
+| 4   | 4     | 65    | 63.5                        | $+1.5$                  |
+| 5   | 5     | 70    | 71.0                        | $-1.0$                  |
 
 Notice: the errors are small (between $-1$ and $+1.5$) and they roughly balance out. No other straight line would produce a smaller RSS for this data.
 
 ### Step 5 — Measuring How Good the Fit Is: $R^2$
 
-So we have a line. But is it a *good* line? What if the data were totally random — our line would have small-ish RSS too, just because we forced a line through it.
+So we have a line. But is it a _good_ line? What if the data were totally random — our line would have small-ish RSS too, just because we forced a line through it.
 
 We need to compare our line's performance against a **baseline**: what if we had no $x$ information at all and just predicted $\bar{y}$ (the mean) for everyone?
 
 We define:
 
 - **Total Sum of Squares (TSS):** How much variation exists in $y$ if we just use the mean as our prediction. $\mathrm{TSS} = \sum_{i=1}^{n}(y_i - \bar{y})^2$
-- **Residual Sum of Squares (RSS):** How much variation is left *after* our line. (Defined earlier.)
+- **Residual Sum of Squares (RSS):** How much variation is left _after_ our line. (Defined earlier.)
 
 The **coefficient of determination**, written $R^2$, is:
 
 $$R^2 = 1 - \frac{\mathrm{RSS}}{\mathrm{TSS}}$$
 
-**Plain English:** $R^2$ is the fraction of the total variation in $y$ that our line *explains*. It always lives between 0 and 1 (for simple linear regression):
+**Plain English:** $R^2$ is the fraction of the total variation in $y$ that our line _explains_. It always lives between 0 and 1 (for simple linear regression):
 
 - $R^2 = 1$ → perfect fit, the line goes through every single point.
 - $R^2 = 0$ → our line is no better than just predicting the mean.
@@ -218,7 +218,7 @@ Our line explains **98.7%** of the variation in exam scores. That is an excellen
 
 ### Summary of Layer 1
 
-You now know everything needed to actually *use* simple linear regression:
+You now know everything needed to actually _use_ simple linear regression:
 
 1. Compute $\bar{x}$ and $\bar{y}$ (the means).
 2. Use the formulas to get $\hat{\beta}_1$ and $\hat{\beta}_0$.
@@ -263,7 +263,7 @@ To minimise, we take the partial derivative with respect to $\beta_0$ and set it
 
 $$\frac{\partial \, \mathrm{RSS}}{\partial \beta_0} = \sum_{i=1}^{n} 2(y_i - \beta_0 - \beta_1 x_i) \cdot (-1) = 0 \tag{2}$$
 
-*Why $(-1)$ at the end?* By the chain rule: derivative of $(y_i - \beta_0 - \beta_1 x_i)^2$ is $2(\ldots)$ times the derivative of the inside with respect to $\beta_0$, which is $-1$.
+_Why $(-1)$ at the end?_ By the chain rule: derivative of $(y_i - \beta_0 - \beta_1 x_i)^2$ is $2(\ldots)$ times the derivative of the inside with respect to $\beta_0$, which is $-1$.
 
 Divide both sides by $-2$:
 
@@ -273,7 +273,7 @@ Split the sum:
 
 $$\sum_{i=1}^{n} y_i - n\beta_0 - \beta_1 \sum_{i=1}^{n} x_i = 0 \tag{4}$$
 
-*Why $\sum \beta_0 = n\beta_0$?* Because $\beta_0$ is a constant — adding it $n$ times gives $n\beta_0$.
+_Why $\sum \beta_0 = n\beta_0$?_ Because $\beta_0$ is a constant — adding it $n$ times gives $n\beta_0$.
 
 Divide through by $n$:
 
@@ -291,7 +291,7 @@ Take the partial derivative with respect to $\beta_1$:
 
 $$\frac{\partial \, \mathrm{RSS}}{\partial \beta_1} = \sum_{i=1}^{n} 2(y_i - \beta_0 - \beta_1 x_i) \cdot (-x_i) = 0 \tag{7}$$
 
-*Why $(-x_i)$?* Chain rule again — the derivative of the inside $(y_i - \beta_0 - \beta_1 x_i)$ with respect to $\beta_1$ is $-x_i$.
+_Why $(-x_i)$?_ Chain rule again — the derivative of the inside $(y_i - \beta_0 - \beta_1 x_i)$ with respect to $\beta_1$ is $-x_i$.
 
 Divide by $-2$:
 
@@ -379,7 +379,7 @@ $$\sum(y_i - \bar{y})^2 = \sum(\hat{y}_i - \bar{y})^2 + 2\sum(\hat{y}_i - \bar{y
 
 The cross-term $\sum(\hat{y}_i - \bar{y})(y_i - \hat{y}_i) = 0$.
 
-*Why is the cross-term zero?* This follows directly from the normal equations we derived: they guarantee that residuals $(y_i - \hat{y}_i)$ are uncorrelated with fitted values $\hat{y}_i$. Think of it as: the line has "soaked up" all the linear information from $x$; what remains (residuals) has nothing left to correlate with.
+_Why is the cross-term zero?_ This follows directly from the normal equations we derived: they guarantee that residuals $(y_i - \hat{y}_i)$ are uncorrelated with fitted values $\hat{y}_i$. Think of it as: the line has "soaked up" all the linear information from $x$; what remains (residuals) has nothing left to correlate with.
 
 Therefore: $\mathrm{TSS} = \mathrm{ESS} + \mathrm{RSS}$ ✓
 
@@ -470,7 +470,7 @@ The true error variance $\sigma^2$ is unknown. We estimate it from the residuals
 
 $$\hat{\sigma}^2 = \frac{\mathrm{RSS}}{n-2} \tag{22}$$
 
-*Why divide by $n-2$ instead of $n$?* We estimated 2 parameters ($\hat{\beta}_0$ and $\hat{\beta}_1$) from the data. This "uses up" 2 degrees of freedom. The residuals are constrained — they must satisfy $\sum e_i = 0$ and $\sum x_i e_i = 0$ — so only $n-2$ of them are truly free. Dividing by $n-2$ makes $\hat{\sigma}^2$ an **unbiased estimator**: $\mathbb{E}[\hat{\sigma}^2] = \sigma^2$.
+_Why divide by $n-2$ instead of $n$?_ We estimated 2 parameters ($\hat{\beta}_0$ and $\hat{\beta}_1$) from the data. This "uses up" 2 degrees of freedom. The residuals are constrained — they must satisfy $\sum e_i = 0$ and $\sum x_i e_i = 0$ — so only $n-2$ of them are truly free. Dividing by $n-2$ makes $\hat{\sigma}^2$ an **unbiased estimator**: $\mathbb{E}[\hat{\sigma}^2] = \sigma^2$.
 
 ### 3.5 — Confidence Intervals and Hypothesis Tests
 
@@ -502,12 +502,12 @@ The only difference is the $+1$ inside the square root. That $+1$ represents the
 
 ### 3.7 — What Breaks When Assumptions Are Violated
 
-| Assumption Violated | What Breaks |
-|---|---|
-| Linearity | The line is the wrong shape; residual plots show curves |
-| Zero mean ($\mathbb{E}[\varepsilon] \neq 0$) | $\hat{\beta}_0$ is biased |
-| Heteroscedasticity (unequal variance) | OLS is no longer BLUE; standard errors are wrong |
-| Correlated errors | Standard errors underestimated; tests give false positives |
+| Assumption Violated                             | What Breaks                                                             |
+| ----------------------------------------------- | ----------------------------------------------------------------------- |
+| Linearity                                       | The line is the wrong shape; residual plots show curves                 |
+| Zero mean ($\mathbb{E}[\varepsilon] \neq 0$)    | $\hat{\beta}_0$ is biased                                               |
+| Heteroscedasticity (unequal variance)           | OLS is no longer BLUE; standard errors are wrong                        |
+| Correlated errors                               | Standard errors underestimated; tests give false positives              |
 | $x$ correlated with $\varepsilon$ (endogeneity) | $\hat{\beta}_1$ is biased AND inconsistent — the most serious violation |
 
 ### 3.8 — Connection to Maximum Likelihood Estimation
@@ -535,8 +535,8 @@ import numpy as np
 # ── DATA ────────────────────────────────────────────────────
 # Using the same five-student dataset from Layer 1
 # x = hours studied, y = exam score
-x = np.array([1, 2, 3, 4, 5], dtype=float)  # predictor variable (xᵢ)
-y = np.array([40, 50, 55, 65, 70], dtype=float)  # response variable (yᵢ)
+x = np.array([1, 2, 3, 4, 5], dtype=float)  # predictor variable (x_i)
+y = np.array([40, 50, 55, 65, 70], dtype=float)  # response variable (y_i)
 
 n = len(x)  # number of observations — needed in several formulas
 
@@ -547,41 +547,41 @@ for i in range(n):
     print(f"  Student {i+1}: x={x[i]:.0f} hours, y={y[i]:.0f} points")
 
 # ── STEP 1: COMPUTE MEANS ────────────────────────────────────
-# x̄ = (1/n) Σ xᵢ   — the centre of all x values
-# ȳ = (1/n) Σ yᵢ   — the centre of all y values
-x_bar = np.mean(x)  # x̄
-y_bar = np.mean(y)  # ȳ
+# x_bar = (1/n) Σ x_i   — the centre of all x values
+# y_bar = (1/n) Σ y_i   — the centre of all y values
+x_bar = np.mean(x)  # x_bar
+y_bar = np.mean(y)  # y_bar
 
 print(f"\n{'='*55}")
 print("STEP 1 — Sample Means")
 print(f"{'='*55}")
-print(f"  x̄  = {x_bar:.4f}")
-print(f"  ȳ  = {y_bar:.4f}")
+print(f"  x_bar  = {x_bar:.4f}")
+print(f"  y_bar  = {y_bar:.4f}")
 
 # ── STEP 2: COMPUTE Sxx AND Sxy ──────────────────────────────
 # These are the building blocks of the slope formula (eq. 14)
-# S_xx = Σ(xᵢ - x̄)²        — how spread out are the x values?
-# S_xy = Σ(xᵢ - x̄)(yᵢ - ȳ) — do x and y move together?
+# S_xx = Σ(x_i - x_bar)²        — how spread out are the x values?
+# S_xy = Σ(x_i - x_bar)(y_i - y_bar) — do x and y move together?
 
-x_dev = x - x_bar    # (xᵢ - x̄) for each i — deviation of x from mean
-y_dev = y - y_bar    # (yᵢ - ȳ) for each i — deviation of y from mean
+x_dev = x - x_bar    # (x_i - x_bar) for each i — deviation of x from mean
+y_dev = y - y_bar    # (y_i - y_bar) for each i — deviation of y from mean
 
-S_xx = np.sum(x_dev ** 2)          # denominator of β̂₁
-S_xy = np.sum(x_dev * y_dev)       # numerator of β̂₁
+S_xx = np.sum(x_dev ** 2)          # denominator of beta_1_hat
+S_xy = np.sum(x_dev * y_dev)       # numerator of beta_1_hat
 S_yy = np.sum(y_dev ** 2)          # = TSS — needed for R²
 
 print(f"\n{'='*55}")
 print("STEP 2 — Intermediate Sums")
 print(f"{'='*55}")
-print(f"  Deviations (xᵢ - x̄):  {x_dev}")
-print(f"  Deviations (yᵢ - ȳ):  {y_dev}")
-print(f"  S_xx = Σ(xᵢ-x̄)²         = {S_xx:.4f}")
-print(f"  S_xy = Σ(xᵢ-x̄)(yᵢ-ȳ)    = {S_xy:.4f}")
-print(f"  S_yy = Σ(yᵢ-ȳ)² (= TSS)  = {S_yy:.4f}")
+print(f"  Deviations (x_i - x_bar):  {x_dev}")
+print(f"  Deviations (y_i - y_bar):  {y_dev}")
+print(f"  S_xx = Σ(x_i-x_bar)²         = {S_xx:.4f}")
+print(f"  S_xy = Σ(x_i-x_bar)(y_i-y_bar)    = {S_xy:.4f}")
+print(f"  S_yy = Σ(y_i-y_bar)² (= TSS)  = {S_yy:.4f}")
 
-# ── STEP 3: COMPUTE β̂₁ AND β̂₀ ───────────────────────────────
-# β̂₁ = S_xy / S_xx  (equation 14 in the notes)
-# β̂₀ = ȳ - β̂₁ · x̄  (equation 6 in the notes)
+# ── STEP 3: COMPUTE beta_1_hat AND beta_0_hat ───────────────────────────────
+# beta_1_hat = S_xy / S_xx  (equation 14 in the notes)
+# beta_0_hat = y_bar - beta_1_hat · x_bar  (equation 6 in the notes)
 
 beta_1_hat = S_xy / S_xx   # slope estimate
 beta_0_hat = y_bar - beta_1_hat * x_bar  # intercept estimate
@@ -589,39 +589,39 @@ beta_0_hat = y_bar - beta_1_hat * x_bar  # intercept estimate
 print(f"\n{'='*55}")
 print("STEP 3 — OLS Coefficient Estimates")
 print(f"{'='*55}")
-print(f"  β̂₁ (slope)     = S_xy / S_xx = {S_xy} / {S_xx} = {beta_1_hat:.4f}")
-print(f"  β̂₀ (intercept) = ȳ - β̂₁·x̄ = {y_bar} - {beta_1_hat:.4f}·{x_bar} = {beta_0_hat:.4f}")
-print(f"\n  Fitted line: ŷ = {beta_0_hat:.2f} + {beta_1_hat:.2f}·x")
+print(f"  beta_1_hat (slope)     = S_xy / S_xx = {S_xy} / {S_xx} = {beta_1_hat:.4f}")
+print(f"  beta_0_hat (intercept) = y_bar - beta_1_hat·x_bar = {y_bar} - {beta_1_hat:.4f}·{x_bar} = {beta_0_hat:.4f}")
+print(f"\n  Fitted line: y_hat = {beta_0_hat:.2f} + {beta_1_hat:.2f}·x")
 
 # ── STEP 4: COMPUTE FITTED VALUES AND RESIDUALS ───────────────
-# ŷᵢ = β̂₀ + β̂₁·xᵢ  — what the line predicts for each point
-# eᵢ = yᵢ - ŷᵢ      — residual: how far the actual point is from the line
+# y_hat_i = beta_0_hat + beta_1_hat·x_i  — what the line predicts for each point
+# e_i = y_i - y_hat_i      — residual: how far the actual point is from the line
 
-y_hat = beta_0_hat + beta_1_hat * x   # fitted values (ŷᵢ)
-e     = y - y_hat                      # residuals (eᵢ)
+y_hat = beta_0_hat + beta_1_hat * x   # fitted values (y_hat_i)
+e     = y - y_hat                      # residuals (e_i)
 
 print(f"\n{'='*55}")
 print("STEP 4 — Fitted Values and Residuals")
 print(f"{'='*55}")
-print(f"  {'i':>3} | {'xᵢ':>5} | {'yᵢ':>6} | {'ŷᵢ':>8} | {'eᵢ = yᵢ-ŷᵢ':>12}")
+print(f"  {'i':>3} | {'x_i':>5} | {'y_i':>6} | {'y_hat_i':>8} | {'e_i = y_i-y_hat_i':>12}")
 print(f"  {'-'*45}")
 for i in range(n):
     print(f"  {i+1:>3} | {x[i]:>5.1f} | {y[i]:>6.1f} | {y_hat[i]:>8.2f} | {e[i]:>+12.2f}")
 
 # Verify the two key properties of OLS residuals (from normal equations):
-# 1) Σeᵢ = 0     (residuals sum to zero)
-# 2) Σxᵢeᵢ = 0  (residuals are uncorrelated with x)
-print(f"\n  Check: Σeᵢ   = {np.sum(e):.10f}  (should be ≈ 0)")
-print(f"  Check: Σxᵢeᵢ = {np.sum(x*e):.10f}  (should be ≈ 0)")
+# 1) Σe_i = 0     (residuals sum to zero)
+# 2) Σx_i e_i = 0  (residuals are uncorrelated with x)
+print(f"\n  Check: Σe_i   = {np.sum(e):.10f}  (should be ≈ 0)")
+print(f"  Check: Σx_i e_i = {np.sum(x*e):.10f}  (should be ≈ 0)")
 
 # ── STEP 5: COMPUTE RSS, TSS, ESS, AND R² ────────────────────
-# RSS = Σeᵢ²          — unexplained variation
+# RSS = Σe_i²          — unexplained variation
 # TSS = S_yy          — total variation in y (already computed above)
 # ESS = TSS - RSS     — variation explained by the line
 # R²  = 1 - RSS/TSS  — fraction of variation explained
 
 RSS = np.sum(e ** 2)                    # Residual Sum of Squares
-TSS = S_yy                              # Total Sum of Squares (= Σ(yᵢ-ȳ)²)
+TSS = S_yy                              # Total Sum of Squares (= Σ(y_i-y_bar)²)
 ESS = np.sum((y_hat - y_bar) ** 2)     # Explained Sum of Squares
 
 R_squared = 1 - RSS / TSS              # coefficient of determination
@@ -629,9 +629,9 @@ R_squared = 1 - RSS / TSS              # coefficient of determination
 print(f"\n{'='*55}")
 print("STEP 5 — Variance Decomposition and R²")
 print(f"{'='*55}")
-print(f"  RSS = Σeᵢ²           = {RSS:.4f}")
-print(f"  TSS = Σ(yᵢ-ȳ)²      = {TSS:.4f}")
-print(f"  ESS = Σ(ŷᵢ-ȳ)²      = {ESS:.4f}")
+print(f"  RSS = Σe_i²           = {RSS:.4f}")
+print(f"  TSS = Σ(y_i-y_bar)²      = {TSS:.4f}")
+print(f"  ESS = Σ(y_hat_i-y_bar)²      = {ESS:.4f}")
 print(f"  ESS + RSS            = {ESS + RSS:.4f}  (should equal TSS = {TSS:.4f})")
 print(f"\n  R² = 1 - RSS/TSS = 1 - {RSS:.2f}/{TSS:.2f} = {R_squared:.6f}")
 print(f"  → The line explains {R_squared*100:.1f}% of the variance in y")
@@ -659,24 +659,24 @@ print(f"\n{'='*55}")
 print("STEP 7 — Prediction")
 print(f"{'='*55}")
 print(f"  New input: x_new = {x_new} hours")
-print(f"  Prediction: ŷ = {beta_0_hat:.2f} + {beta_1_hat:.2f} × {x_new} = {y_pred:.2f} points")
+print(f"  Prediction: y_hat = {beta_0_hat:.2f} + {beta_1_hat:.2f} × {x_new} = {y_pred:.2f} points")
 
 # ── LAYER 3: ERROR VARIANCE ESTIMATE ─────────────────────────
-# σ̂² = RSS / (n-2)  — unbiased estimate of true error variance
+# sigma_sq_hat = RSS / (n-2)  — unbiased estimate of true error variance
 # We divide by n-2 (not n) because 2 parameters were estimated
 
-sigma_sq_hat = RSS / (n - 2)        # estimated error variance σ̂²
-sigma_hat    = np.sqrt(sigma_sq_hat) # estimated error std deviation σ̂
+sigma_sq_hat = RSS / (n - 2)        # estimated error variance sigma_sq_hat
+sigma_hat    = np.sqrt(sigma_sq_hat) # estimated error std deviation sigma_hat
 
-SE_beta_1 = np.sqrt(sigma_sq_hat / S_xx)  # standard error of β̂₁  (eq. 23)
+SE_beta_1 = np.sqrt(sigma_sq_hat / S_xx)  # standard error of beta_1_hat  (eq. 23)
 
 print(f"\n{'='*55}")
 print("LAYER 3 — Standard Error and Uncertainty")
 print(f"{'='*55}")
-print(f"  σ̂²          = RSS/(n-2) = {RSS:.4f}/{n-2} = {sigma_sq_hat:.4f}")
-print(f"  σ̂           = {sigma_hat:.4f}")
-print(f"  SE(β̂₁)      = σ̂/√S_xx  = {sigma_hat:.4f}/√{S_xx:.1f} = {SE_beta_1:.4f}")
-print(f"  t-statistic = β̂₁ / SE(β̂₁) = {beta_1_hat:.4f} / {SE_beta_1:.4f} = {beta_1_hat/SE_beta_1:.4f}")
+print(f"  sigma_sq_hat          = RSS/(n-2) = {RSS:.4f}/{n-2} = {sigma_sq_hat:.4f}")
+print(f"  sigma_hat           = {sigma_hat:.4f}")
+print(f"  SE(beta_1_hat)      = sigma_hat/√S_xx  = {sigma_hat:.4f}/√{S_xx:.1f} = {SE_beta_1:.4f}")
+print(f"  t-statistic = beta_1_hat / SE(beta_1_hat) = {beta_1_hat:.4f} / {SE_beta_1:.4f} = {beta_1_hat/SE_beta_1:.4f}")
 ```
 
 ---
@@ -807,6 +807,7 @@ The numerator is the covariance of $x$ and $y$; the denominator is the variance 
 **Ideal answer:** $R^2 = 1 - \mathrm{RSS}/\mathrm{TSS}$ measures the fraction of total variance in $y$ explained by the linear model. It ranges from 0 (model no better than predicting the mean) to 1 (perfect fit).
 
 Limitations:
+
 - **High $R^2$ does not mean the model is correct.** You can get $R^2 = 0.99$ with a badly misspecified model if the signal is strong.
 - **$R^2$ cannot decrease when you add variables.** In multiple regression, $R^2$ always goes up when you add a predictor — even a random one. That is why adjusted $R^2$ exists.
 - **It says nothing about causation.** $R^2 = 0.95$ does not mean $x$ causes $y$.
@@ -873,7 +874,7 @@ The distinction is between **in-sample fit** (how well the line fits the data it
 
 **Intuition says:** "Yes, high performers consistently perform high."
 
-**The surprising truth:** This is the **regression to the mean** phenomenon. Extreme scores contain a component of luck. The student who scored 95 probably had both good skill *and* a good luck day (easy questions, feeling great, etc.). On the next test, the luck component is independent — so statistically, their score is expected to be closer to the population mean than 95.
+**The surprising truth:** This is the **regression to the mean** phenomenon. Extreme scores contain a component of luck. The student who scored 95 probably had both good skill _and_ a good luck day (easy questions, feeling great, etc.). On the next test, the luck component is independent — so statistically, their score is expected to be closer to the population mean than 95.
 
 This is where the term "regression" originally came from. Galton (1886) found that children of very tall parents were on average tall, but not as tall as their parents — they "regressed to the mean." Linear regression gets its name from this observation.
 
@@ -887,9 +888,9 @@ This is where the term "regression" originally came from. Galton (1886) found th
 
 3. **Forgetting to define $\bar{x}$ and $\bar{y}$ in a whiteboard derivation.** Interviewers notice when symbols appear without definition.
 
-4. **Confusing prediction intervals and confidence intervals.** The CI is for the *average* response; the PI is for an *individual* new observation. PI is always wider because it includes the irreducible noise $\varepsilon_\text{new}$.
+4. **Confusing prediction intervals and confidence intervals.** The CI is for the _average_ response; the PI is for an _individual_ new observation. PI is always wider because it includes the irreducible noise $\varepsilon_\text{new}$.
 
-5. **Treating regression as causal.** OLS gives the best linear predictor. Whether $x$ *causes* $y$ requires additional assumptions or experimental design. Do not say "a one-unit increase in $x$ *causes* a $\hat{\beta}_1$ increase in $y$" — say "is *associated with*."
+5. **Treating regression as causal.** OLS gives the best linear predictor. Whether $x$ _causes_ $y$ requires additional assumptions or experimental design. Do not say "a one-unit increase in $x$ _causes_ a $\hat{\beta}_1$ increase in $y$" — say "is _associated with_."
 
 ---
 
