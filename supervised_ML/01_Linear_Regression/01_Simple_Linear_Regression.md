@@ -478,7 +478,11 @@ Under the normality assumption, the standardised estimates follow a $t$-distribu
 
 A **95% confidence interval** for $\beta_1$:
 
-$$\hat{\beta}_1 \pm t_{n-2,\, 0.025} \cdot \mathrm{SE}(\hat{\beta}_1), \quad \text{where } \mathrm{SE}(\hat{\beta}_1) = \sqrt{\frac{\hat{\sigma}^2}{S_{xx}}} \tag{23}$$
+$$\hat{\beta}_1 \pm t_{n-2,\, 0.025} \cdot \mathrm{SE}(\hat{\beta}_1) \tag{23}$$
+
+where
+
+$$\mathrm{SE}(\hat{\beta}_1) = \sqrt{\frac{\hat{\sigma}^2}{S_{xx}}}$$
 
 The **hypothesis test** for whether $x$ is useful at all: $H_0: \beta_1 = 0$ (no relationship). The test statistic is:
 
